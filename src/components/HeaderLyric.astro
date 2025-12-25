@@ -1,0 +1,22 @@
+---
+const {
+    title = "Título Desconocido",
+    artist = "Artista Desconocido",
+    tone = "C",
+} = Astro.props;
+---
+
+<header class="mb-8">
+    <h1 class="text-4xl font-extrabold text-text-main mb-1">{title}</h1>
+    <h2 class="text-xl text-accent-main font-medium">{artist}</h2>
+    <div class="flex items-center gap-4 mt-4 text-sm text-text-secondary">
+        <span
+            class="bg-bg-secondary px-3 py-1 rounded-full border border-white/10"
+        >
+            Tom: <span class="text-accent-main font-bold">{tone}</span>
+        </span>
+        <span class="cursor-pointer hover:underline">
+            Principal (guitarra y guitarra eléctrica)
+        </span>
+    </div>
+</header>
