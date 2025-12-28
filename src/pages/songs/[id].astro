@@ -5,6 +5,7 @@ import Header from "../../components/Header.astro";
 import HeaderLyric from "../../components/HeaderLyric.astro";
 import SongView from "../../components/SongView.jsx";
 import SongTools from "../../components/SongTools.astro";
+import YouTubePlayer from "../../components/YouTubePlayer.astro";
 import type { Song } from "../../types/song";
 import "../../styles/global.css";
 
@@ -43,14 +44,20 @@ try {
                     artist={song?.artist}
                     tone={song?.key}
                     category={song?.category?.name}
-                    url_song={song?.url_song}
                 />
 
-                <SongView
-                    client:load
-                    initialContent={song?.content}
-                    initialKey={song?.key}
-                />
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-2">
+                        <SongView
+                            client:load
+                            initialContent={song?.content}
+                            initialKey={song?.key}
+                        />
+                    </div>
+                    <div class="lg:col-span-1">
+                        <YouTubePlayer url={song?.url_song} />
+                    </div>
+                </div>
             </main>
         </div>
     </div>

@@ -4,6 +4,7 @@ import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/Header.astro";
 import ChordEditor from "../../components/ChordEditor.jsx";
 import "../../styles/global.css";
+import { updateSong } from "../../services/songs";
 
 const { id } = Astro.params;
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
@@ -40,45 +41,23 @@ try {
     return Astro.redirect("/");
 }
 
+let errorMessage = "";
+
 // Handle Update
 if (Astro.request.method === "POST") {
-    try {
-        const formData = await Astro.request.formData();
-        const artist = formData.get("artist")?.toString() || "Unknown";
-        const title = formData.get("title")?.toString() || "Untitled";
-        const key = formData.get("key")?.toString() || "C";
-        const url_song = formData.get("url_song")?.toString() || "";
-        const content = formData.get("content")?.toString() || "";
-        const categoryId = formData.get("categoryId")?.toString() || "1";
+    const formData = await Astro.request.formData();
+    const result = await updateSong(Number(id), formData);
 
-        const res = await fetch(`${API_URL}/songs/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                title,
-                artist,
-                content,
-                key,
-                url_song,
-                categoryId: parseInt(categoryId),
-            }),
-        });
-
-        if (!res.ok) {
-            const errData = await res.json();
-            console.error("Error updating song:", errData);
-        } else {
-            return Astro.redirect(`/songs/${id}`);
-        }
-    } catch (e) {
-        console.error("Server exception:", e);
+    if (result.success) {
+        return Astro.redirect(`/songs/${id}`);
+    } else {
+        errorMessage = result.error || "Error al actualizar la canción";
+        console.error(result.data);
     }
 }
 ---
 
-<Layout title={`Editar - ${song.title}`}>
+<Layout title="Editar Canción">
     <div class="flex flex-col min-h-screen bg-bg-main text-text-main">
         <Header />
 
@@ -134,16 +113,22 @@ if (Astro.request.method === "POST") {
                                 [
                                     "C",
                                     "C#",
+                                    "Cm",
                                     "D",
                                     "D#",
+                                    "Dm",
                                     "E",
+                                    "Em",
                                     "F",
                                     "F#",
                                     "G",
                                     "G#",
+                                    "Gm",
                                     "A",
                                     "A#",
+                                    "Am",
                                     "B",
+                                    "Bm",
                                 ].map((k) => (
                                     <option value={k} selected={song.key === k}>
                                         {k}
@@ -195,7 +180,7 @@ if (Astro.request.method === "POST") {
                     </div>
                 </div>
 
-                <div class="border-t border-white/10 pt-6">
+                <div class="border-t border-white/10 pt-6 flex flex-col gap-20">
                     <div class="mb-4">
                         <h3 class="text-xl font-semibold text-white">
                             Letra y Acordes
@@ -210,15 +195,14 @@ if (Astro.request.method === "POST") {
                         name="content"
                         initialContent={song.content}
                     />
-                </div>
-
-                <div class="flex justify-end pt-4">
-                    <button
-                        type="submit"
-                        class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20"
-                    >
-                        Guardar Cambios
-                    </button>
+                    <div class="pt-4 flex justify-end">
+                        <button
+                            type="submit"
+                            class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20"
+                        >
+                            Guardar Cambios
+                        </button>
+                    </div>
                 </div>
             </form>
         </main>

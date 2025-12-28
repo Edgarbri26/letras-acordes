@@ -3,7 +3,7 @@
 >
     <div class="flex items-center gap-4">
         <a href="/" class="text-2xl font-bold text-accent-main tracking-tighter"
-            >CifraPro</a
+            >CancioneroDigital</a
         >
     </div>
 
@@ -34,10 +34,28 @@
                 <a href="/masas">Misas</a>
             </li>
             <li class="hover:text-text-main cursor-pointer transition-colors">
-                <a href="/">Canciones</a>
+                <a href="/add-song">Agregar Canción</a>
             </li>
 
             <li class="text-accent-main cursor-pointer font-bold">login</li>
         </ul>
     </nav>
 </header>
+
+<script>
+    const searchInput = document.querySelector(
+        'input[type="search"]',
+    ) as HTMLInputElement;
+    if (searchInput) {
+        searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `/?q=${encodeURIComponent(query)}`;
+                } else {
+                    window.location.href = `/`;
+                }
+            }
+        });
+    }
+</script>

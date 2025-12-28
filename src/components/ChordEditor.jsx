@@ -59,23 +59,23 @@ export default function ChordEditor({ name = "content", initialContent = "" }) {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[500px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Área de Edición */}
-                <div className="flex flex-col">
+                <div className="flex flex-col h-[400px] lg:h-[500px]">
                     <label className="text-sm font-medium text-text-secondary mb-2">Editor (Código)</label>
                     <textarea
                         ref={textareaRef}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="w-full h-full bg-bg-secondary border border-white/10 rounded-lg p-4 font-mono text-sm text-text-main focus:outline-none focus:border-accent-main resize-none placeholder-white/20"
+                        className="w-full flex-1 bg-bg-secondary border border-white/10 rounded-lg p-4 font-mono text-sm text-text-main focus:outline-none focus:border-accent-main resize-none placeholder-white/20"
                         placeholder="Escribe la letra aquí y presiona los botones de acordes para insertar...&#10;Ejemplo: Dios es[C]ta aqui"
                     />
                 </div>
 
                 {/* Vista Previa */}
-                <div className="flex flex-col">
+                <div className="flex flex-col h-[400px] lg:h-[500px]">
                     <label className="text-sm font-medium text-text-secondary mb-2">Vista Previa (En vivo)</label>
-                    <div className="w-full h-full bg-[#fffbf6] text-gray-900 border border-white/10 rounded-lg p-6 overflow-y-auto shadow-inner">
+                    <div className="w-full flex-1 bg-[#fffbf6] text-gray-900 border border-white/10 rounded-lg p-6 overflow-y-auto shadow-inner">
                         {content.split('\n').map((line, i) => (
                             <LineRenderer key={i} line={line} />
                         ))}

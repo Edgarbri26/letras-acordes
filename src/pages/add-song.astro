@@ -23,40 +23,18 @@ try {
     console.error("Error fetching categories:", e);
 }
 
+let errorMessage = "";
+
+import { createSong } from "services/songs";
+
 if (Astro.request.method === "POST") {
-    try {
-        const formData = await Astro.request.formData();
-        const artist = formData.get("artist")?.toString() || "Unknown";
-        const title = formData.get("title")?.toString() || "Untitled";
-        const key = formData.get("key")?.toString() || "C";
-        const url_song = formData.get("url_song")?.toString() || "";
-        const content = formData.get("content")?.toString() || "";
-        const categoryId = formData.get("categoryId")?.toString() || "1";
+    const formData = await Astro.request.formData();
+    const result = await createSong(formData);
 
-        const res = await fetch(`${API_URL}/songs`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                title: title,
-                artist: artist,
-                content: content,
-                key: key,
-                url_song: url_song,
-                categoryId: parseInt(categoryId),
-            }),
-        });
-
-        if (!res.ok) {
-            const errData = await res.json();
-            console.error("Error saving song:", errData);
-        } else {
-            const savedSong = await res.json();
-            return Astro.redirect(`/songs/${savedSong.id}`);
-        }
-    } catch (e) {
-        console.error("Server exception:", e);
+    if (result.success) {
+        return Astro.redirect(`/songs/${result.data.id}`);
+    } else {
+        errorMessage = result.error || "Error desconocido";
     }
 }
 ---
@@ -70,7 +48,14 @@ if (Astro.request.method === "POST") {
                 Enviar Cifrado
             </h1>
 
-            {/* Nota: method="POST" es necesario para procesar datos */}
+            {
+                errorMessage ? (
+                    <div class="bg-red-500/10 border border-red-500/50 text-red-500 p-4 rounded-lg mb-6">
+                        {errorMessage}
+                    </div>
+                ) : null
+            }
+
             <form class="space-y-8" method="POST">
                 {/* Info Básica (Grid de 3 columnas para aprovechar espacio) */}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -101,6 +86,7 @@ if (Astro.request.method === "POST") {
                             name="title"
                             class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
                             placeholder="Ej. Dios está aquí"
+                            required
                         />
                     </div>
 
