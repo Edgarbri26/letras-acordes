@@ -14,26 +14,28 @@ try {
     const q = search === "all" ? "" : search || "";
     // If q is present in URL (e.g. from ?q=...), it might override params.search?
     // Actually, Layout Header redirects to /search/[term]. So [term] IS the query.
-    // But we also want to support ?categoryId filtering.
-
     // We can also check if there is a ?q param for legacy or direct access, but let's stick to using `q` variable from params.
     // However, the backend expects `q` query param.
 
     // Logic:
     // If search param is "all", we treat it as empty query for backend.
 
+    // Get category filter if present
     const categoryId = Astro.url.searchParams.get("categoryId") || "";
+
+    const API_URL =
+        import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
     // Fetch songs
     const res = await fetch(
-        `http://localhost:3000/api/songs?q=${encodeURIComponent(q)}&categoryId=${categoryId}`,
+        `${API_URL}/songs?q=${encodeURIComponent(q)}&categoryId=${categoryId}`,
     );
     if (!res.ok) throw new Error("Failed to fetch songs");
     songs = await res.json();
     songs.reverse();
 
     // Fetch categories
-    const catRes = await fetch(`http://localhost:3000/api/categories`);
+    const catRes = await fetch(`${API_URL}/categories`);
     if (catRes.ok) {
         categories = await catRes.json();
     }

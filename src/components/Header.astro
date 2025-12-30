@@ -88,7 +88,10 @@ const isLoggedIn = !!token;
         logoutBtn.addEventListener("click", async () => {
             try {
                 // Call backend to clear cookie
-                await fetch("http://localhost:3000/api/auth/logout", {
+                const API_URL =
+                    import.meta.env.PUBLIC_API_URL ||
+                    "http://localhost:3000/api";
+                await fetch(`${API_URL}/auth/logout`, {
                     method: "POST",
                     credentials: "include",
                 });

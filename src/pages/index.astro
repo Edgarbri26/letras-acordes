@@ -12,21 +12,23 @@ let categories: Category[] = [];
 let stats = { totalSongs: 0, totalCategories: 0 };
 let error = null;
 
+const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
+
 try {
 	// Fetch latest 10 songs
-	const res = await fetch(`http://localhost:3000/api/songs?limit=10`);
+	const res = await fetch(`${API_URL}/songs?limit=10`);
 	if (!res.ok) throw new Error("Failed to fetch songs");
 	songs = await res.json();
 	// Backend now returns ordered by desc
 
 	// Fetch categories
-	const catRes = await fetch(`http://localhost:3000/api/categories`);
+	const catRes = await fetch(`${API_URL}/categories`);
 	if (catRes.ok) {
 		categories = await catRes.json();
 	}
 
 	// Fetch stats
-	const statsRes = await fetch(`http://localhost:3000/api/stats`);
+	const statsRes = await fetch(`${API_URL}/stats`);
 	if (statsRes.ok) {
 		stats = await statsRes.json();
 	}

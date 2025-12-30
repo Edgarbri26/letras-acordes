@@ -2,32 +2,21 @@
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
 
+import { login } from "../services/auth";
+
 if (Astro.request.method === "POST") {
     try {
         const data = await Astro.request.formData();
         const email = data.get("email");
         const password = data.get("password");
 
-        const response = await fetch("http://localhost:3000/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-        });
+        const response = await login(email, password);
 
-        if (response.ok) {
+        if (response && response.ok) {
             // Forward cookies from backend to client
             const setCookie = response.headers.get("set-cookie");
             if (setCookie) {
-                // Astro automatically handles formatting if we just append header?
-                // Actually, since this is SSR, we need to set the cookie on the Astro response.
-                // But fetch in Node doesn't automatically set browser cookies.
-                // We need to parse 'set-cookie' header from backend and set it on Astro.cookies
-                // Simplified approach for same-domain (if proxying) or use client-side fetch.
-                // Client-side fetch is often easier for setting cookies in browser if backend/frontend on different ports but CORS allow credentials.
-                // However, let's try client-side JS for the actual login call to ensure browser cookie is set directly by the response if possible,
-                // OR proxy the Set-Cookie header.
+                // Logic to handle cookies if needed, or rely on client-side
             }
         }
     } catch (error) {
@@ -98,6 +87,8 @@ if (Astro.request.method === "POST") {
 </Layout>
 
 <script>
+    import { login } from "../services/auth";
+
     const form = document.getElementById("loginForm");
     const errorMessage = document.getElementById("errorMessage");
 
@@ -105,27 +96,19 @@ if (Astro.request.method === "POST") {
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
+            const email = formData.get("email");
+            const password = formData.get("password");
 
             try {
-                const res = await fetch(
-                    "http://localhost:3000/api/auth/login",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(data),
-                        // IMPORTANT: Include credentials to accept cookies
-                        credentials: "include",
-                    },
-                );
+                const res = await login(email, password);
 
-                if (res.ok) {
+                if (res && res.ok) {
                     // If backend sets cookie successfully, we just redirect
                     window.location.href = "/";
                 } else {
-                    const error = await res.json();
+                    const error = res
+                        ? await res.json()
+                        : { error: "Error desconocido" };
                     errorMessage.textContent =
                         error.error || "Error al iniciar sesión";
                     errorMessage.classList.remove("hidden");
