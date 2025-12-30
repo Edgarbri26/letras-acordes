@@ -1,48 +1,107 @@
+---
+const token = Astro.cookies.get("token")?.value;
+const isLoggedIn = !!token;
+---
+
 <header
     class="flex items-center justify-between px-4 py-3 bg-bg-secondary border-b border-white/10 sticky top-0 z-50"
 >
-    <div class="flex items-center gap-4">
-        <a href="/" class="text-2xl font-bold text-accent-main tracking-tighter"
-            >CancioneroDigital</a
-        >
-    </div>
-
-    <div class="flex-1 max-w-xl mx-4">
-        <div class="relative">
-            <input
-                class="w-full bg-bg-main border border-white/10 rounded-full py-2 px-4 pl-10 text-text-main focus:outline-none focus:border-accent-main transition-colors"
-                type="search"
-                placeholder="¿Qué quieres tocar hoy?"
-            />
-            <svg
-                class="absolute left-3 top-2.5 h-5 w-5 text-gray-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                ><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"
-                ></path></svg
+    <div class="max-w-6xl w-full mx-auto flex justify-between">
+        <div class="flex items-center gap-4">
+            <a
+                href="/"
+                class="text-2xl font-bold text-accent-main tracking-tighter"
+                ><img
+                    src="/ShortLogo.svg"
+                    alt="Logo"
+                    class="hidden w-auto md:block md:h-11"
+                />
+                <img
+                    src="/icono.svg"
+                    alt="Logo"
+                    class="h-9 w-auto md:hidden"
+                /></a
             >
         </div>
+
+        <div class="flex-1 max-w-xl mx-4">
+            <div class="relative">
+                <input
+                    class="w-full bg-bg-main border border-white/10 rounded-full py-2 px-4 pl-10 text-text-main focus:outline-none focus:border-accent-main transition-colors"
+                    type="search"
+                    placeholder="¿Qué quieres tocar y cantar hoy?"
+                />
+                <svg
+                    class="absolute left-3 top-2.5 h-5 w-5 text-gray-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><circle cx="11" cy="11" r="8"></circle><path
+                        d="m21 21-4.3-4.3"></path></svg
+                >
+            </div>
+        </div>
+
+        <nav>
+            <ul
+                class="flex items-center h-9 gap-4 text-sm font-medium text-text-secondary"
+            >
+                <li
+                    class="hover:text-text-main cursor-pointer transition-colors"
+                >
+                    <a href="/masas">Misas</a>
+                </li>
+                {
+                    isLoggedIn && (
+                        <li class="hover:text-text-main cursor-pointer transition-colors">
+                            <a href="/add-song">Add</a>
+                        </li>
+                    )
+                }
+
+                {
+                    isLoggedIn ? (
+                        <li
+                            id="logoutBtn"
+                            class="text-red-400 hover:text-red-300 cursor-pointer font-bold"
+                        >
+                            Cerrar Sesión
+                        </li>
+                    ) : (
+                        <li class="text-accent-main hover:text-accent-secondary cursor-pointer font-bold">
+                            <a href="/login">Ingresar</a>
+                        </li>
+                    )
+                }
+            </ul>
+        </nav>
     </div>
-
-    <nav>
-        <ul class="flex gap-4 text-sm font-medium text-text-secondary">
-            <li class="hover:text-text-main cursor-pointer transition-colors">
-                <a href="/masas">Misas</a>
-            </li>
-            <li class="hover:text-text-main cursor-pointer transition-colors">
-                <a href="/add-song">Agregar Canción</a>
-            </li>
-
-            <li class="text-accent-main cursor-pointer font-bold">login</li>
-        </ul>
-    </nav>
 </header>
 
 <script>
+    // Logout Logic
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", async () => {
+            try {
+                // Call backend to clear cookie
+                await fetch("http://localhost:3000/api/auth/logout", {
+                    method: "POST",
+                    credentials: "include",
+                });
+                // Clear client side expectations and reload/redirect
+                // Since cookie is httpOnly, we rely on backend clearing it.
+                // Reload to update SSR state
+                window.location.href = "/";
+            } catch (e) {
+                console.error("Logout failed", e);
+            }
+        });
+    }
+
     const searchInput = document.querySelector(
         'input[type="search"]',
     ) as HTMLInputElement;
@@ -51,9 +110,9 @@
             if (e.key === "Enter") {
                 const query = searchInput.value.trim();
                 if (query) {
-                    window.location.href = `/?q=${encodeURIComponent(query)}`;
+                    window.location.href = `/search/${encodeURIComponent(query)}`;
                 } else {
-                    window.location.href = `/`;
+                    window.location.href = `/search/all`;
                 }
             }
         });

@@ -19,7 +19,7 @@ const extractSongData = (formData: FormData): Omit<Song, "id" | "category"> => {
     };
 };
 
-export const createSong = async (formData: FormData): Promise<ServiceResponse> => {
+export const createSong = async (formData: FormData, token?: string): Promise<ServiceResponse> => {
     const data = extractSongData(formData);
 
     if (!data.title.trim()) {
@@ -27,9 +27,16 @@ export const createSong = async (formData: FormData): Promise<ServiceResponse> =
     }
 
     try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Cookie"] = `token=${token}`;
+            // Or Authorization if you prefer
+            // headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const res = await fetch(`${API_URL}/songs`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify(data),
         });
 
@@ -46,7 +53,7 @@ export const createSong = async (formData: FormData): Promise<ServiceResponse> =
     }
 };
 
-export const updateSong = async (id: number, formData: FormData): Promise<ServiceResponse> => {
+export const updateSong = async (id: number, formData: FormData, token?: string): Promise<ServiceResponse> => {
     const data = extractSongData(formData);
 
     if (!data.title.trim()) {
@@ -54,9 +61,14 @@ export const updateSong = async (id: number, formData: FormData): Promise<Servic
     }
 
     try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Cookie"] = `token=${token}`;
+        }
+
         const res = await fetch(`${API_URL}/songs/${id}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify(data),
         });
 

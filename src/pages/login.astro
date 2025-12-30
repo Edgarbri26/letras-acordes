@@ -1,0 +1,140 @@
+---
+import Layout from "../layouts/Layout.astro";
+import "../styles/global.css";
+
+if (Astro.request.method === "POST") {
+    try {
+        const data = await Astro.request.formData();
+        const email = data.get("email");
+        const password = data.get("password");
+
+        const response = await fetch("http://localhost:3000/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email, password }),
+        });
+
+        if (response.ok) {
+            // Forward cookies from backend to client
+            const setCookie = response.headers.get("set-cookie");
+            if (setCookie) {
+                // Astro automatically handles formatting if we just append header?
+                // Actually, since this is SSR, we need to set the cookie on the Astro response.
+                // But fetch in Node doesn't automatically set browser cookies.
+                // We need to parse 'set-cookie' header from backend and set it on Astro.cookies
+                // Simplified approach for same-domain (if proxying) or use client-side fetch.
+                // Client-side fetch is often easier for setting cookies in browser if backend/frontend on different ports but CORS allow credentials.
+                // However, let's try client-side JS for the actual login call to ensure browser cookie is set directly by the response if possible,
+                // OR proxy the Set-Cookie header.
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+---
+
+<Layout title="Iniciar Sesión - Cancionero">
+    <div
+        class="flex flex-col min-h-screen bg-bg-main text-text-main items-center justify-center p-4"
+    >
+        <div
+            class="w-full max-w-md bg-bg-secondary p-8 rounded-xl shadow-lg border border-white/5"
+        >
+            <h1 class="text-2xl font-bold text-accent-main mb-6 text-center">
+                Iniciar Sesión
+            </h1>
+
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label
+                        for="email"
+                        class="block text-sm font-medium text-text-secondary mb-2"
+                        >Correo Electrónico</label
+                    >
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        class="w-full bg-bg-main border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-main transition-colors"
+                        placeholder="admin@example.com"
+                    />
+                </div>
+
+                <div>
+                    <label
+                        for="password"
+                        class="block text-sm font-medium text-text-secondary mb-2"
+                        >Contraseña</label
+                    >
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        class="w-full bg-bg-main border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-main transition-colors"
+                        placeholder="••••••••"
+                    />
+                </div>
+
+                <div
+                    id="errorMessage"
+                    class="text-red-500 text-sm text-center hidden"
+                >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full bg-accent-main text-white font-bold py-3 rounded-lg hover:bg-accent-secondary transition-transform transform active:scale-95"
+                >
+                    Ingresar
+                </button>
+            </form>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    const form = document.getElementById("loginForm");
+    const errorMessage = document.getElementById("errorMessage");
+
+    if (form instanceof HTMLFormElement && errorMessage) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const res = await fetch(
+                    "http://localhost:3000/api/auth/login",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(data),
+                        // IMPORTANT: Include credentials to accept cookies
+                        credentials: "include",
+                    },
+                );
+
+                if (res.ok) {
+                    // If backend sets cookie successfully, we just redirect
+                    window.location.href = "/";
+                } else {
+                    const error = await res.json();
+                    errorMessage.textContent =
+                        error.error || "Error al iniciar sesión";
+                    errorMessage.classList.remove("hidden");
+                }
+            } catch (err) {
+                console.error(err);
+                errorMessage.textContent = "Error de conexión";
+                errorMessage.classList.remove("hidden");
+            }
+        });
+    }
+</script>

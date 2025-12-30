@@ -5,12 +5,14 @@ import Header from "../components/Header.astro";
 import ChordEditor from "../components/ChordEditor.jsx";
 import { supabase } from "../lib/supabase";
 import "../styles/global.css";
+import type { Category } from "../types/category";
+import { createSong } from "@services/songs";
 
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
-interface Category {
-    id: number;
-    name: string;
+const token = Astro.cookies.get("token")?.value;
+if (!token) {
+    return Astro.redirect("/login");
 }
 
 let categories: Category[] = [];
@@ -25,11 +27,9 @@ try {
 
 let errorMessage = "";
 
-import { createSong } from "services/songs";
-
 if (Astro.request.method === "POST") {
     const formData = await Astro.request.formData();
-    const result = await createSong(formData);
+    const result = await createSong(formData, token);
 
     if (result.success) {
         return Astro.redirect(`/songs/${result.data.id}`);
@@ -41,8 +41,6 @@ if (Astro.request.method === "POST") {
 
 <Layout title="Subir Canción">
     <div class="flex flex-col min-h-screen bg-bg-main text-text-main">
-        <Header />
-
         <main class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10">
             <h1 class="text-3xl font-bold text-accent-main mb-8">
                 Enviar Cifrado

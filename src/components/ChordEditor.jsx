@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { transposeText } from '../utils/music';
+import { transposeText, transposeChord } from '../utils/music';
 
 export default function ChordEditor({ name = "content", initialContent = "" }) {
     // Estado inicial vacío o con instrucciones
@@ -39,13 +39,39 @@ export default function ChordEditor({ name = "content", initialContent = "" }) {
         }, 0);
     };
 
+    const transposeContent = (semitones) => {
+        const newContent = content.replace(/\[(.*?)\]/g, (match, chord) => {
+            return `[${transposeChord(chord, semitones)}]`;
+        });
+        setContent(newContent);
+    };
+
     return (
         <div className="space-y-4">
             {/* TRUCO: Input oculto para que el formulario de Astro reciba los datos */}
             <input type="hidden" name={name} value={content} />
 
             {/* Botonera */}
-            <div className="flex flex-wrap gap-2 p-2 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex flex-wrap gap-2 p-2 bg-white/5 rounded-lg border border-white/10 items-center">
+                <div className="flex gap-1 mr-4 border-r border-white/10 pr-4">
+                    <button
+                        type="button"
+                        onClick={() => transposeContent(-1)}
+                        className="px-3 py-1 text-sm font-bold text-white bg-red-500/80 hover:bg-red-600 rounded transition-colors"
+                        title="Bajar 1 semitono"
+                    >
+                        -1 Tono
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => transposeContent(1)}
+                        className="px-3 py-1 text-sm font-bold text-white bg-green-500/80 hover:bg-green-600 rounded transition-colors"
+                        title="Subir 1 semitono"
+                    >
+                        +1 Tono
+                    </button>
+                </div>
+
                 <span className="text-xs text-white/50 flex items-center mr-2">Insertar:</span>
                 {commonChords.map(chord => (
                     <button
