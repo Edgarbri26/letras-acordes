@@ -1,11 +1,11 @@
-import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_6nPDthAX.mjs';
+import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_BSRT4aVe.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DhIDK12W.mjs';
 /* empty css                                    */
 export { renderers } from '../renderers.mjs';
 
 const login = async (email, password) => {
-  const API_URL = "https://letras-acordes-backend.onrender.com/api";
+  const API_URL = "http://localhost:3000/api";
   if (!email || !password) {
     console.error("Email and Password are required");
     return null;

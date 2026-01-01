@@ -1,17 +1,16 @@
-import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_6nPDthAX.mjs';
+import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_BSRT4aVe.mjs';
+import { $ as $$Layout } from '../chunks/Layout_DhIDK12W.mjs';
 /* empty css                                    */
-import { $ as $$GirdSongs } from '../chunks/GirdSongs_aEaE9JiS.mjs';
+import { $ as $$GirdSongs } from '../chunks/GirdSongs_C6lgIgFf.mjs';
 export { renderers } from '../renderers.mjs';
 
-const prerender = false;
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   let songs = [];
   let categories = [];
   let stats = { totalSongs: 0, totalCategories: 0 };
   let error = null;
-  const API_URL = "https://letras-acordes-backend.onrender.com/api";
+  const API_URL = "http://localhost:3000/api";
   try {
     const res = await fetch(`${API_URL}/songs?limit=10`);
     if (!res.ok) throw new Error("Failed to fetch songs");
@@ -55,7 +54,6 @@ const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 	__proto__: null,
 	default: $$Index,
 	file: $$file,
-	prerender,
 	url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 
