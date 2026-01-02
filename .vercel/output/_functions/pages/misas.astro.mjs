@@ -1,22 +1,8 @@
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout, a as $$Header } from '../chunks/Layout_CgTu8x7F.mjs';
-import { A as API_URL } from '../chunks/songs_BZcFNsrW.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C6REJ3E8.mjs';
+import { g as getMisas } from '../chunks/misas_CRUPEDcZ.mjs';
 export { renderers } from '../renderers.mjs';
-
-const getMisas = async () => {
-  try {
-    const res = await fetch(`${API_URL}/misas`);
-    if (!res.ok) {
-      return { success: false, error: "Error al obtener las misas." };
-    }
-    const data = await res.json();
-    return { success: true, data };
-  } catch (e) {
-    console.error("Service exception:", e);
-    return { success: false, error: "Error de conexión." };
-  }
-};
 
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   const { success, data: misas } = await getMisas();
@@ -32,7 +18,7 @@ const $$Index = createComponent(async ($$result, $$props, $$slots) => {
       day: "numeric"
     });
   };
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Misas - CancioneroDigital" }, { "default": async ($$result2) => renderTemplate` ${renderComponent($$result2, "Header", $$Header, {})} ${maybeRenderHead()}<main class="max-w-4xl mx-auto p-4"> <div class="flex justify-between items-center mb-6"> <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": "Misas - CancioneroDigital" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<main class="max-w-4xl mx-auto p-4"> <div class="flex justify-between items-center mb-6"> <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
 Misas
 </h1> <a href="/misas/add" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
 + Nueva Misa

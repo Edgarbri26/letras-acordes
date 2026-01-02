@@ -22,4 +22,4 @@ const $$Layout = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`<html lang="en" class="h-full w-full"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator"${addAttribute(Astro2.generator, "content")}><title>${title}</title>${renderHead()}</head> <body class="bg-bg-main text-text-main h-full w-full"> ${renderComponent($$result, "Header", $$Header, {})} ${renderSlot($$result, $$slots["default"])} </body></html>`;
 }, "C:/dev/letras y acordes/letras-acordes/src/layouts/Layout.astro", void 0);
 
-export { $$Layout as $, $$Header as a };
+export { $$Layout as $ };

@@ -4,6 +4,8 @@ import "../styles/global.css";
 
 import { login } from "../services/auth";
 
+let errorMessage = "";
+
 if (Astro.request.method === "POST") {
     try {
         const data = await Astro.request.formData();
@@ -15,12 +17,41 @@ if (Astro.request.method === "POST") {
         if (response && response.ok) {
             // Forward cookies from backend to client
             const setCookie = response.headers.get("set-cookie");
+
             if (setCookie) {
-                // Logic to handle cookies if needed, or rely on client-side
+                // Extract token from cookie string (assuming format "token=...; ...")
+                const match = setCookie.match(/token=([^;]+)/);
+                const token = match ? match[1] : null;
+
+                if (token) {
+                    Astro.cookies.set("token", token, {
+                        path: "/",
+                        httpOnly: true,
+                        secure: import.meta.env.PROD,
+                        sameSite: "lax",
+                    });
+                    return Astro.redirect("/");
+                }
+            } else {
+                // Fallback: try to see if token is in body
+                const body = await response.json();
+                if (body.token) {
+                    Astro.cookies.set("token", body.token, {
+                        path: "/",
+                        httpOnly: true,
+                        secure: import.meta.env.PROD,
+                        sameSite: "lax",
+                    });
+                    return Astro.redirect("/");
+                }
             }
+            errorMessage = "Error: No se recibió el token de autenticación.";
+        } else {
+            errorMessage = "Credenciales incorrectas.";
         }
     } catch (error) {
         console.error(error);
+        errorMessage = "Error de conexión.";
     }
 }
 ---
@@ -36,7 +67,7 @@ if (Astro.request.method === "POST") {
                 Iniciar Sesión
             </h1>
 
-            <form id="loginForm" class="space-y-6">
+            <form id="loginForm" method="POST" class="space-y-6">
                 <div>
                     <label
                         for="email"
@@ -69,16 +100,19 @@ if (Astro.request.method === "POST") {
                     />
                 </div>
 
-                <div
-                    id="errorMessage"
-                    class="text-red-500 text-sm text-center hidden"
-                >
-                </div>
+                {
+                    errorMessage && (
+                        <div
+                            id="errorMessage"
+                            class="text-red-500 text-sm text-center"
+                        >
+                            {errorMessage}
+                        </div>
+                    )
+                }
 
                 <button
                     type="submit"
-                    form="loginForm"
-                    
                     class="w-full bg-accent-main text-white font-bold py-3 rounded-lg hover:bg-accent-secondary transition-transform transform active:scale-95"
                 >
                     Ingresar
@@ -87,39 +121,3 @@ if (Astro.request.method === "POST") {
         </div>
     </div>
 </Layout>
-
-<script>
-    import { login } from "../services/auth";
-
-    const form = document.getElementById("loginForm");
-    const errorMessage = document.getElementById("errorMessage");
-
-    if (form instanceof HTMLFormElement && errorMessage) {
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            const email = formData.get("email");
-            const password = formData.get("password");
-
-            try {
-                const res = await login(email, password);
-
-                if (res && res.ok) {
-                    // If backend sets cookie successfully, we just redirect
-                    window.location.href = "/";
-                } else {
-                    const error = res
-                        ? await res.json()
-                        : { error: "Error desconocido" };
-                    errorMessage.textContent =
-                        error.error || "Error al iniciar sesión";
-                    errorMessage.classList.remove("hidden");
-                }
-            } catch (err) {
-                console.error(err);
-                errorMessage.textContent = "Error de conexión";
-                errorMessage.classList.remove("hidden");
-            }
-        });
-    }
-</script>

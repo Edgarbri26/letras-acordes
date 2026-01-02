@@ -1,0 +1,284 @@
+import React, { useState, useEffect } from "react";
+import { searchSongs } from "../services/songs";
+import { addSongToMisa } from "../services/misas";
+
+export default function MisaSongManager({ misaId, moments, token }) {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [selectedSong, setSelectedSong] = useState(null);
+    const [selectedMomentId, setSelectedMomentId] = useState("");
+    const [selectedKey, setSelectedKey] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState({ type: "", text: "" });
+    const [isOpen, setIsOpen] = useState(false);
+
+    const openModal = () => setIsOpen(true);
+    const closeModal = () => {
+        setIsOpen(false);
+        handleCancelSelection();
+        setSearchResults([]);
+        setSearchTerm("");
+    };
+
+    const handleSearch = async (e) => {
+        e.preventDefault();
+        if (!searchTerm.trim()) return;
+
+        setIsSearching(true);
+        setMessage({ type: "", text: "" });
+        try {
+            const res = await searchSongs(searchTerm);
+            if (res.success) {
+                setSearchResults(res.data);
+                if (res.data.length === 0) {
+                    setMessage({ type: "info", text: "No se encontraron canciones." });
+                }
+            } else {
+                setMessage({ type: "error", text: res.error });
+            }
+        } catch (error) {
+            setMessage({ type: "error", text: "Error al buscar canciones." });
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSelectSong = (song) => {
+        setSelectedSong(song);
+        setSelectedKey(song.key || "C");
+        setSearchResults([]);
+        setSearchTerm("");
+    };
+
+    const handleAddSong = async () => {
+        if (!selectedSong) return;
+
+        setIsSubmitting(true);
+        setMessage({ type: "", text: "" });
+
+        try {
+            const res = await addSongToMisa(
+                misaId,
+                selectedSong.id,
+                selectedMomentId ? parseInt(selectedMomentId) : null,
+                selectedKey,
+                token
+            );
+
+            if (res.success) {
+                setMessage({ type: "success", text: "Canción agregada con éxito." });
+                // Reset form
+                setSelectedSong(null);
+                setSelectedMomentId("");
+                setSelectedKey("");
+                // Reload page to show new song
+                window.location.reload();
+            } else {
+                setMessage({ type: "error", text: res.error });
+            }
+        } catch (error) {
+            setMessage({ type: "error", text: "Error al agregar la canción." });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleCancelSelection = () => {
+        setSelectedSong(null);
+        setSelectedKey("");
+        setMessage({ type: "", text: "" });
+    };
+
+    useEffect(() => {
+        // Expose function globally for Astro buttons
+        window.openAddSongModal = (momentId) => {
+            console.log("Global openAddSongModal called with:", momentId);
+            setSelectedMomentId(momentId);
+            setIsOpen(true);
+        };
+
+        return () => {
+            delete window.openAddSongModal;
+        };
+    }, []);
+
+    const selectedMoment = moments.find(m => m.id.toString() === selectedMomentId.toString());
+
+    return (
+        <>
+            <button
+                onClick={openModal}
+                className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-dashed border-gray-300 dark:border-gray-600 mt-8"
+            >
+                + Agregar Canción Manualmente
+            </button>
+
+            {isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 mx-4">
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+                                    Agregar Canción
+                                </h3>
+                                <button
+                                    onClick={closeModal}
+                                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+
+                            {selectedMoment && !selectedSong && (
+                                <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-4 border border-blue-100 dark:border-blue-800">
+                                    <span className="text-blue-700 dark:text-blue-300 font-medium">
+                                        Agregando a: <strong>{selectedMoment.nombre}</strong>
+                                    </span>
+                                    <button
+                                        onClick={() => setSelectedMomentId("")}
+                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                    >
+                                        Cancelar
+                                    </button>
+                                </div>
+                            )}
+
+                            {message.text && (
+                                <div
+                                    className={`p-3 rounded mb-4 text-sm ${message.type === "error"
+                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                        : message.type === "success"
+                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                            : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                                        }`}
+                                >
+                                    {message.text}
+                                </div>
+                            )}
+
+                            {!selectedSong ? (
+                                <div className="space-y-4">
+                                    <form onSubmit={handleSearch} className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Buscar canción..."
+                                            className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={isSearching || !searchTerm.trim()}
+                                            className="bg-accent-main hover:bg-accent-main/90 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50"
+                                        >
+                                            {isSearching ? "Buscando..." : "Buscar"}
+                                        </button>
+                                    </form>
+
+                                    {searchResults.length > 0 && (
+                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700 max-h-60 overflow-y-auto">
+                                            {searchResults.map((song) => (
+                                                <li
+                                                    key={song.id}
+                                                    className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex justify-between items-center transition-colors"
+                                                    onClick={() => handleSelectSong(song)}
+                                                >
+                                                    <div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                                                            {song.title}
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {song.artist}
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300">
+                                                        {song.key}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="flex justify-between items-start bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                                        <div>
+                                            <h4 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+                                                {selectedSong.title}
+                                            </h4>
+                                            <p className="text-gray-600 dark:text-gray-400">
+                                                {selectedSong.artist}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={handleCancelSelection}
+                                            className="text-sm text-red-500 hover:text-red-600 dark:hover:text-red-400 font-medium"
+                                        >
+                                            Cambiar
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Momento
+                                            </label>
+                                            <select
+                                                value={selectedMomentId}
+                                                onChange={(e) => setSelectedMomentId(e.target.value)}
+                                                className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-gray-400"
+                                            >
+                                                <option value="">Seleccionar momento...</option>
+                                                {moments.map((moment) => (
+                                                    <option key={moment.id} value={moment.id}>
+                                                        {moment.nombre}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Tono
+                                            </label>
+                                            <select
+                                                value={selectedKey}
+                                                onChange={(e) => setSelectedKey(e.target.value)}
+                                                className="w-full bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            >
+                                                {["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].map(
+                                                    (key) => (
+                                                        <option key={key} value={key}>
+                                                            {key}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-3 pt-2">
+                                        <button
+                                            onClick={handleCancelSelection}
+                                            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleAddSong}
+                                            disabled={isSubmitting}
+                                            className="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-2 px-6 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20 disabled:opacity-50 disabled:scale-100 close-modal-btn"
+                                        >
+                                            {isSubmitting ? "Agregando..." : "Agregar a la Misa"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}

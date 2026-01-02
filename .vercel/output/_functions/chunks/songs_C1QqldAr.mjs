@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = "https://letras-acordes-backend.onrender.com/api";
 const extractSongData = (formData) => {
   return {
     title: formData.get("title")?.toString() || "",
@@ -61,5 +61,18 @@ const updateSong = async (id, formData, token) => {
     return { success: false, error: "Error de conexión con el servidor." };
   }
 };
+const searchSongs = async (query, categoryId = "") => {
+  try {
+    const res = await fetch(`${API_URL}/songs?q=${encodeURIComponent(query)}&categoryId=${categoryId}`);
+    if (!res.ok) {
+      return { success: false, error: "Error al buscar canciones." };
+    }
+    const data = await res.json();
+    return { success: true, data };
+  } catch (e) {
+    console.error("Service exception:", e);
+    return { success: false, error: "Error de conexión." };
+  }
+};
 
-export { API_URL as A, createSong as c, updateSong as u };
+export { API_URL as A, createSong as c, searchSongs as s, updateSong as u };

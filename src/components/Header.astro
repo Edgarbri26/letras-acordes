@@ -64,11 +64,8 @@ const isLoggedIn = !!token;
 
                 {
                     isLoggedIn ? (
-                        <li
-                            id="logoutBtn"
-                            class="text-red-400 hover:text-red-300 cursor-pointer font-bold"
-                        >
-                            Cerrar Sesión
+                        <li class="text-red-400 hover:text-red-300 cursor-pointer font-bold">
+                            <a href="/logout">Cerrar Sesión</a>
                         </li>
                     ) : (
                         <li class="text-accent-main hover:text-accent-secondary cursor-pointer font-bold">
@@ -82,29 +79,6 @@ const isLoggedIn = !!token;
 </header>
 
 <script>
-    // Logout Logic
-    const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", async () => {
-            try {
-                // Call backend to clear cookie
-                const API_URL =
-                    import.meta.env.PUBLIC_API_URL ||
-                    "http://localhost:3000/api";
-                await fetch(`${API_URL}/auth/logout`, {
-                    method: "POST",
-                    credentials: "include",
-                });
-                // Clear client side expectations and reload/redirect
-                // Since cookie is httpOnly, we rely on backend clearing it.
-                // Reload to update SSR state
-                window.location.href = "/";
-            } catch (e) {
-                console.error("Logout failed", e);
-            }
-        });
-    }
-
     const searchInput = document.querySelector(
         'input[type="search"]',
     ) as HTMLInputElement;

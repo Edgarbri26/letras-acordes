@@ -1,6 +1,6 @@
 import { e as createComponent, f as createAstro, m as maybeRenderHead, l as renderScript, r as renderTemplate, h as addAttribute, k as renderComponent } from '../../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_CgTu8x7F.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_C6REJ3E8.mjs';
 import 'clsx';
 import { jsx } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
@@ -183,7 +183,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
     return Astro2.redirect("/");
   }
   try {
-    const API_URL = undefined                               || "http://localhost:3000/api";
+    const API_URL = "https://letras-acordes-backend.onrender.com/api";
     const res = await fetch(`${API_URL}/songs/${id}`);
     if (!res.ok) {
       if (res.status === 404) return Astro2.redirect("/");

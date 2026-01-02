@@ -84,3 +84,17 @@ export const updateSong = async (id: number, formData: FormData, token?: string)
         return { success: false, error: "Error de conexión con el servidor." };
     }
 };
+
+export const searchSongs = async (query: string, categoryId: string = ""): Promise<ServiceResponse<Song[]>> => {
+    try {
+        const res = await fetch(`${API_URL}/songs?q=${encodeURIComponent(query)}&categoryId=${categoryId}`);
+        if (!res.ok) {
+            return { success: false, error: "Error al buscar canciones." };
+        }
+        const data = await res.json();
+        return { success: true, data };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};

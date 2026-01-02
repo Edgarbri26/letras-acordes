@@ -1,8 +1,8 @@
 import { e as createComponent, f as createAstro, k as renderComponent, l as renderScript, r as renderTemplate, n as defineScriptVars, h as addAttribute, m as maybeRenderHead } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CgTu8x7F.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C6REJ3E8.mjs';
 /* empty css                                    */
-import { c as createSong } from '../chunks/songs_BZcFNsrW.mjs';
+import { c as createSong } from '../chunks/songs_C1QqldAr.mjs';
 export { renderers } from '../renderers.mjs';
 
 var __freeze = Object.freeze;
@@ -13,7 +13,7 @@ const $$Astro = createAstro();
 const $$AddSong = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
   Astro2.self = $$AddSong;
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://letras-acordes-backend.onrender.com/api";
   const token = Astro2.cookies.get("token")?.value;
   if (!token) {
     return Astro2.redirect("/login");

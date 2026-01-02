@@ -1,6 +1,6 @@
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_CgTu8x7F.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C6REJ3E8.mjs';
 /* empty css                                    */
 import { $ as $$GirdSongs } from '../chunks/GirdSongs_C6lgIgFf.mjs';
 export { renderers } from '../renderers.mjs';
@@ -10,7 +10,7 @@ const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   let categories = [];
   let stats = { totalSongs: 0, totalCategories: 0 };
   let error = null;
-  const API_URL = "http://localhost:3000/api";
+  const API_URL = "https://letras-acordes-backend.onrender.com/api";
   try {
     const res = await fetch(`${API_URL}/songs?limit=10`);
     if (!res.ok) throw new Error("Failed to fetch songs");

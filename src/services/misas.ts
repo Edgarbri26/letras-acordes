@@ -40,3 +40,53 @@ export const createMisa = async (title: string, dateMisa: string, token?: string
         return { success: false, error: "Error de conexión." };
     }
 };
+
+export const addSongToMisa = async (misaId: number, songId: number, momentId?: number | null, key?: string | null, token?: string): Promise<ServiceResponse> => {
+    try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Cookie"] = `token=${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/misas/${misaId}/songs`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ songId, momentId, key }),
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            return { success: false, error: "Error al agregar la canción.", data: errData };
+        }
+
+        const data = await res.json();
+        return { success: true, data };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};
+
+export const removeSongFromMisa = async (misaId: number, misaSongId: number, token?: string): Promise<ServiceResponse> => {
+    try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Cookie"] = `token=${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/misas/${misaId}/songs/${misaSongId}`, {
+            method: "DELETE",
+            headers,
+            credentials: "include",
+        });
+
+        if (!res.ok) {
+            return { success: false, error: "Error al eliminar la canción." };
+        }
+
+        return { success: true };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};

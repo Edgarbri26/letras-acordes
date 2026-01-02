@@ -1,6 +1,6 @@
 import { e as createComponent, f as createAstro, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_CgTu8x7F.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_C6REJ3E8.mjs';
 import { $ as $$GirdSongs } from '../../chunks/GirdSongs_C6lgIgFf.mjs';
 export { renderers } from '../../renderers.mjs';
 
@@ -15,7 +15,7 @@ const $$search = createComponent(async ($$result, $$props, $$slots) => {
   try {
     const q = search === "all" ? "" : search || "";
     const categoryId = Astro2.url.searchParams.get("categoryId") || "";
-    const API_URL = undefined                               || "http://localhost:3000/api";
+    const API_URL = "https://letras-acordes-backend.onrender.com/api";
     const res = await fetch(
       `${API_URL}/songs?q=${encodeURIComponent(q)}&categoryId=${categoryId}`
     );
