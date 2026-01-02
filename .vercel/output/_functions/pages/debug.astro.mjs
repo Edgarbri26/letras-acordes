@@ -7,7 +7,6 @@ var __freeze = Object.freeze;
 var __defProp = Object.defineProperty;
 var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(raw || cooked.slice()) }));
 var _a;
-const prerender = false;
 const $$Debug = createComponent(($$result, $$props, $$slots) => {
   const API_URL = undefined                              ;
   const NODE_ENV = "production";
@@ -20,7 +19,6 @@ const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
     __proto__: null,
     default: $$Debug,
     file: $$file,
-    prerender,
     url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 

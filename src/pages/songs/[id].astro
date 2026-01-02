@@ -1,11 +1,11 @@
 ---
-export const prerender = false;
-import Layout from "@layouts/Layout.astro";
-import HeaderLyric from "@components/HeaderLyric.astro";
-import SongView from "@components/SongView.jsx";
-import SongTools from "@components/SongTools.astro";
-import YouTubePlayer from "@components/YouTubePlayer.astro";
-import type { Song } from "../../types/song";
+// export const prerender = false;
+import Layout from "@/layouts/Layout.astro";
+import HeaderLyric from "@/components/HeaderLyric.astro";
+import SongView from "@/components/SongView.jsx";
+import SongTools from "@/components/SongTools.astro";
+import YouTubePlayer from "@/components/YouTubePlayer.astro";
+import type { Song } from "@/types/song";
 import "../../styles/global.css";
 
 let song: Song | null = null;

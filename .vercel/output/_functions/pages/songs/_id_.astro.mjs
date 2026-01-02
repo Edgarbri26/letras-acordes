@@ -1,6 +1,6 @@
 import { e as createComponent, f as createAstro, m as maybeRenderHead, l as renderScript, r as renderTemplate, h as addAttribute, k as renderComponent } from '../../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DhIDK12W.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_CgTu8x7F.mjs';
 import 'clsx';
 import { jsx } from 'react/jsx-runtime';
 import { useState, useEffect } from 'react';
@@ -174,7 +174,6 @@ const $$YouTubePlayer = createComponent(($$result, $$props, $$slots) => {
 }, "C:/dev/letras y acordes/letras-acordes/src/components/YouTubePlayer.astro", void 0);
 
 const $$Astro = createAstro();
-const prerender = false;
 const $$id = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
   Astro2.self = $$id;
@@ -195,7 +194,7 @@ const $$id = createComponent(async ($$result, $$props, $$slots) => {
     console.error("Error fetching song:", e);
     return Astro2.redirect("/");
   }
-  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": `${song?.title} - ${song?.artist}` }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="flex flex-col min-h-screen bg-bg-main text-text-main"> <div class="flex flex-1 max-w-[1400px] mx-auto w-full"> ${renderComponent($$result2, "SongTools", $$SongTools, { "id": id })} <main class="flex-1 p-6 md:p-10 min-w-0"> ${renderComponent($$result2, "HeaderLyric", $$HeaderLyric, { "title": song?.title, "artist": song?.artist, "tone": song?.key, "category": song?.category?.name })} <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"> <div class="lg:col-span-2"> ${renderComponent($$result2, "SongView", SongView, { "client:load": true, "initialContent": song?.content, "initialKey": song?.key, "client:component-hydration": "load", "client:component-path": "@components/SongView.jsx", "client:component-export": "default" })} </div> <div class="lg:col-span-1"> ${renderComponent($$result2, "YouTubePlayer", $$YouTubePlayer, { "url": song?.url_song })} </div> </div> </main> </div> </div> ` })}`;
+  return renderTemplate`${renderComponent($$result, "Layout", $$Layout, { "title": `${song?.title} - ${song?.artist}` }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<div class="flex flex-col min-h-screen bg-bg-main text-text-main"> <div class="flex flex-1 max-w-[1400px] mx-auto w-full"> ${renderComponent($$result2, "SongTools", $$SongTools, { "id": id })} <main class="flex-1 p-6 md:p-10 min-w-0"> ${renderComponent($$result2, "HeaderLyric", $$HeaderLyric, { "title": song?.title, "artist": song?.artist, "tone": song?.key, "category": song?.category?.name })} <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"> <div class="lg:col-span-2"> ${renderComponent($$result2, "SongView", SongView, { "client:load": true, "initialContent": song?.content, "initialKey": song?.key, "client:component-hydration": "load", "client:component-path": "@/components/SongView.jsx", "client:component-export": "default" })} </div> <div class="lg:col-span-1"> ${renderComponent($$result2, "YouTubePlayer", $$YouTubePlayer, { "url": song?.url_song })} </div> </div> </main> </div> </div> ` })}`;
 }, "C:/dev/letras y acordes/letras-acordes/src/pages/songs/[id].astro", void 0);
 const $$file = "C:/dev/letras y acordes/letras-acordes/src/pages/songs/[id].astro";
 const $$url = "/songs/[id]";
@@ -204,7 +203,6 @@ const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
     __proto__: null,
     default: $$id,
     file: $$file,
-    prerender,
     url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 

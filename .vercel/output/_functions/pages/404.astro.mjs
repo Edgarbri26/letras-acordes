@@ -1,6 +1,6 @@
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_DhIDK12W.mjs';
+import { $ as $$Layout } from '../chunks/Layout_CgTu8x7F.mjs';
 export { renderers } from '../renderers.mjs';
 
 const perro = new Proxy({"src":"/_astro/perro.CZAn00p1.gif","width":354,"height":200,"format":"gif"}, {

@@ -1,11 +1,10 @@
 import { e as createComponent, f as createAstro, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DhIDK12W.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_CgTu8x7F.mjs';
 import { $ as $$GirdSongs } from '../../chunks/GirdSongs_C6lgIgFf.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const $$Astro = createAstro();
-const prerender = false;
 const $$search = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
   Astro2.self = $$search;
@@ -49,7 +48,6 @@ const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
     __proto__: null,
     default: $$search,
     file: $$file,
-    prerender,
     url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 

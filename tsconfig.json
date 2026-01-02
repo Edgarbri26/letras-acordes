@@ -5,27 +5,31 @@
     "**/*"
   ],
   "exclude": [
-    "dist"
+    "dist",
+    ".vercel"
   ],
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "@components/*": [
+      "@/components/*": [
         "src/components/*"
       ],
-      "@layouts/*": [
+      "@/layouts/*": [
         "src/layouts/*"
       ],
-      "@pages/*": [
+      "@/pages/*": [
         "src/pages/*"
       ],
-      "@services/*": [
+      "@/services/*": [
         "src/services/*"
       ],
-      "@types/*": [
+      "@/types/*": [
         "src/types/*"
+      ],
+      "@/lib/*": [
+        "src/lib/*"
       ]
     }
   }

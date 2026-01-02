@@ -1,6 +1,6 @@
 import { renderers } from './renderers.mjs';
 import { c as createExports, s as serverEntrypointModule } from './chunks/_@astrojs-ssr-adapter_khc_Yknm.mjs';
-import { manifest } from './manifest_D62QqBeG.mjs';
+import { manifest } from './manifest_CEweUZdg.mjs';
 
 const serverIslandMap = new Map();;
 
@@ -10,9 +10,12 @@ const _page2 = () => import('./pages/add-song.astro.mjs');
 const _page3 = () => import('./pages/debug.astro.mjs');
 const _page4 = () => import('./pages/edit-song/_id_.astro.mjs');
 const _page5 = () => import('./pages/login.astro.mjs');
-const _page6 = () => import('./pages/search/_search_.astro.mjs');
-const _page7 = () => import('./pages/songs/_id_.astro.mjs');
-const _page8 = () => import('./pages/index.astro.mjs');
+const _page6 = () => import('./pages/misas/add.astro.mjs');
+const _page7 = () => import('./pages/misas/_id_.astro.mjs');
+const _page8 = () => import('./pages/misas.astro.mjs');
+const _page9 = () => import('./pages/search/_search_.astro.mjs');
+const _page10 = () => import('./pages/songs/_id_.astro.mjs');
+const _page11 = () => import('./pages/index.astro.mjs');
 const pageMap = new Map([
     ["node_modules/astro/dist/assets/endpoint/generic.js", _page0],
     ["src/pages/404.astro", _page1],
@@ -20,9 +23,12 @@ const pageMap = new Map([
     ["src/pages/debug.astro", _page3],
     ["src/pages/edit-song/[id].astro", _page4],
     ["src/pages/login.astro", _page5],
-    ["src/pages/search/[search].astro", _page6],
-    ["src/pages/songs/[id].astro", _page7],
-    ["src/pages/index.astro", _page8]
+    ["src/pages/misas/add.astro", _page6],
+    ["src/pages/misas/[id].astro", _page7],
+    ["src/pages/misas/index.astro", _page8],
+    ["src/pages/search/[search].astro", _page9],
+    ["src/pages/songs/[id].astro", _page10],
+    ["src/pages/index.astro", _page11]
 ]);
 
 const _manifest = Object.assign(manifest, {
@@ -33,7 +39,7 @@ const _manifest = Object.assign(manifest, {
     middleware: () => import('./_noop-middleware.mjs')
 });
 const _args = {
-    "middlewareSecret": "9e4ddd20-5ca1-4718-bd9f-67e41789898c",
+    "middlewareSecret": "03176561-f215-430f-8755-74a26f5db1b3",
     "skewProtection": false
 };
 const _exports = createExports(_manifest, _args);

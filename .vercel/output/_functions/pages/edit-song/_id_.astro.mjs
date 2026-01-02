@@ -1,12 +1,11 @@
 import { e as createComponent, f as createAstro, k as renderComponent, r as renderTemplate, m as maybeRenderHead, h as addAttribute } from '../../chunks/astro/server_sX7_rjgf.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../../chunks/Layout_DhIDK12W.mjs';
+import { $ as $$Layout } from '../../chunks/Layout_CgTu8x7F.mjs';
 /* empty css                                       */
-import { u as updateSong } from '../../chunks/songs__m0eFYY7.mjs';
+import { u as updateSong } from '../../chunks/songs_BZcFNsrW.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const $$Astro = createAstro();
-const prerender = false;
 const $$id = createComponent(async ($$result, $$props, $$slots) => {
   const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
   Astro2.self = $$id;
@@ -83,7 +82,6 @@ const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
     __proto__: null,
     default: $$id,
     file: $$file,
-    prerender,
     url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 
