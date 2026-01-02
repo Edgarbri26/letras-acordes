@@ -19,7 +19,7 @@ export const createMisa = async (title: string, dateMisa: string, visibility: st
     try {
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (token) {
-            headers["Cookie"] = `token=${token}`;
+            headers["Authorization"] = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_URL}/misas`, {
@@ -46,7 +46,7 @@ export const updateMisa = async (id: number, title: string, dateMisa: string, vi
     try {
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (token) {
-            headers["Cookie"] = `token=${token}`;
+            headers["Authorization"] = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_URL}/misas/${id}`, {
@@ -73,7 +73,7 @@ export const addSongToMisa = async (misaId: number, songId: number, momentId?: n
     try {
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (token) {
-            headers["Cookie"] = `token=${token}`;
+            headers["Authorization"] = `Bearer ${token}`;
         }
 
         const res = await fetch(`${API_URL}/misas/${misaId}/songs`, {

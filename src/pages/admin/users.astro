@@ -184,12 +184,14 @@ try {
     </div>
 </AdminLayout>
 
-<div id="admin-config" data-api-url={API_URL} class="hidden"></div>
+<div id="admin-config" data-api-url={API_URL} data-token={token} class="hidden">
+</div>
 
 <script>
     const configDiv = document.getElementById("admin-config");
     const API_URL =
         configDiv?.getAttribute("data-api-url") || "http://localhost:3000/api";
+    const TOKEN = configDiv?.getAttribute("data-token");
 
     const modal = document.getElementById("userModal");
     const form = document.getElementById("userForm") as HTMLFormElement;
@@ -243,21 +245,17 @@ try {
 
             const id = btn.getAttribute("data-id");
             try {
-                const getCookie = (name: string) => {
-                    const value = `; ${document.cookie}`;
-                    const parts = value.split(`; ${name}=`);
-                    if (parts.length === 2)
-                        return parts.pop()?.split(";").shift();
-                };
-
                 const res = await fetch(`${API_URL}/users/${id}`, {
                     method: "DELETE",
-                    credentials: "include",
+                    headers: {
+                        Authorization: `Bearer ${TOKEN}`,
+                    },
                 });
 
                 if (res.ok) window.location.reload();
                 else alert("Error al eliminar");
             } catch (e) {
+                console.error(e);
                 alert("Error de conexión");
             }
         });
@@ -281,8 +279,10 @@ try {
         try {
             const res = await fetch(endpoint, {
                 method,
-                headers: { "Content-Type": "application/json" },
-                credentials: "include", // Important for cookie
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${TOKEN}`,
+                },
                 body: JSON.stringify(data),
             });
 
@@ -292,6 +292,7 @@ try {
                 alert(err.error || "Error al guardar");
             }
         } catch (e) {
+            console.error(e);
             alert("Error de conexión");
         }
     });

@@ -2,6 +2,7 @@
 // export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/Header.astro";
+const token = Astro.cookies.get("token")?.value;
 ---
 
 <Layout title="Nueva Misa - CancioneroDigital">
@@ -13,6 +14,7 @@ import Header from "../../components/Header.astro";
         <form
             id="addMisaForm"
             class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md space-y-4"
+            data-token={token}
         >
             <div>
                 <label
@@ -45,6 +47,21 @@ import Header from "../../components/Header.astro";
                 />
             </div>
 
+            <div>
+                <label
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >Visibilidad</label
+                >
+                <select
+                    name="visibility"
+                    id="visibility"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white p-2 border"
+                >
+                    <option value="PUBLIC" selected>Pública</option>
+                    <option value="PRIVATE">Privada (Solo tú y enlace)</option>
+                </select>
+            </div>
+
             <div class="flex justify-end pt-4">
                 <a
                     href="/misas"
@@ -72,8 +89,21 @@ import Header from "../../components/Header.astro";
         const formData = new FormData(form);
         const title = formData.get("title") as string;
         const dateMisa = formData.get("dateMisa") as string;
+        const visibility = formData.get("visibility") as string;
+        const token = form.getAttribute("data-token");
 
-        const { success, error } = await createMisa(title, dateMisa);
+        if (!token) {
+            alert("No estás autenticado. Por favor inicia sesión.");
+            window.location.href = "/login";
+            return;
+        }
+
+        const { success, error } = await createMisa(
+            title,
+            dateMisa,
+            visibility,
+            token,
+        );
 
         if (success) {
             window.location.href = "/misas";
