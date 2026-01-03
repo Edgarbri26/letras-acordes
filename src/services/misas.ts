@@ -158,3 +158,34 @@ export const deleteMisa = async (id: number, token: string | undefined): Promise
         return { success: false, error: "Error de conexión." };
     }
 };
+
+export const updateMisaSong = async (misaId: number, misaSongId: number, key: string, token: string | undefined, editToken?: string): Promise<ServiceResponse<any>> => {
+    try {
+        const headers: HeadersInit = { "Content-Type": "application/json" };
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        let url = `${API_URL}/misas/${misaId}/songs/${misaSongId}`;
+        if (editToken) {
+            url += `?edit_token=${editToken}`;
+        }
+
+        const res = await fetch(url, {
+            method: "PUT",
+            headers,
+            body: JSON.stringify({ key }),
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            return { success: false, error: err.error || "Error al actualizar la canción." };
+        }
+
+        const data = await res.json();
+        return { success: true, data };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};

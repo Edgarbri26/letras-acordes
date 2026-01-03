@@ -39,7 +39,7 @@ try {
 ---
 
 <AdminLayout title="Gestión de Roles">
-    <div class="p-6">
+    <div id="roles-page" class="p-6" data-api-url={API_URL} data-token={token}>
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-accent-main">
                 Gestión de Roles y Permisos
@@ -48,17 +48,9 @@ try {
                 id="createRoleBtn"
                 class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors flex items-center gap-2"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                >
-                    <path
-                        fill-rule="evenodd"
-                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-                        clip-rule="evenodd"></path>
-                </svg>
+                <i
+                    class="fa-solid fa-plus-circle h-5 w-5 flex items-center justify-center"
+                ></i>
                 Crear Rol
             </button>
         </div>
@@ -92,20 +84,7 @@ try {
                                                 data-role-name={role.name}
                                                 title="Editar nombre del rol"
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    class="h-4 w-4"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                >
-                                                    <path
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                                    />
-                                                </svg>
+                                                <i class="fa-solid fa-pen-to-square h-4 w-4" />
                                             </button>
                                         )}
                                     </div>
@@ -164,15 +143,19 @@ try {
     </div>
 </AdminLayout>
 
-<script define:vars={{ roles, API_URL, token }}>
+<script>
     import Swal from "sweetalert2";
 
-    const saveBtn = document.getElementById("saveBtn");
+    const pageContainer = document.getElementById("roles-page");
+    const API_URL = pageContainer?.dataset.apiUrl;
+    const token = pageContainer?.dataset.token;
+
+    const saveBtn = document.getElementById("saveBtn") as HTMLButtonElement;
     const createRoleBtn = document.getElementById("createRoleBtn");
     const editRoleBtns = document.querySelectorAll(".edit-role-btn");
     const checkboxes = document.querySelectorAll(
         'input[type="checkbox"][data-role-id]',
-    );
+    ) as NodeListOf<HTMLInputElement>;
 
     // Configuración común de Swal
     const swalDark = {
@@ -237,6 +220,7 @@ try {
     // Editar Nombre del Rol
     editRoleBtns.forEach((btn) => {
         btn.addEventListener("click", async () => {
+            if (!(btn instanceof HTMLElement)) return;
             const roleId = btn.dataset.roleId;
             const currentName = btn.dataset.roleName;
 
@@ -285,20 +269,20 @@ try {
         });
     });
 
-    saveBtn.addEventListener("click", async () => {
+    saveBtn?.addEventListener("click", async () => {
         saveBtn.disabled = true;
         saveBtn.innerText = "Guardando...";
 
         try {
             // Group permissions by role
-            const rolePermissions = {};
+            const rolePermissions: Record<string, string[]> = {};
 
             // Initialize with current state from DOM
             checkboxes.forEach((cb) => {
                 const roleId = cb.dataset.roleId;
                 const permName = cb.dataset.permName;
 
-                if (!roleId) return;
+                if (!roleId || !permName) return;
 
                 if (!rolePermissions[roleId]) {
                     rolePermissions[roleId] = [];

@@ -38,7 +38,7 @@ if (id) {
             /* Reset básico para impresión */
             body {
                 background: white !important;
-                /* color: black !important; */
+                color: black !important;
                 font-family: sans-serif;
                 margin: 0;
                 padding: 40px;
@@ -54,7 +54,7 @@ if (id) {
 
             /* Logotipo para impresión: asegurar visibilidad si es blanco/claro */
             .print-logo {
-                filter: brightness(0) saturate(100%); /* Vuelve el logo negro */
+                /* filter: brightness(0) saturate(100%); Vuelve el logo negro */
                 height: 48px;
             }
 
@@ -122,11 +122,13 @@ if (id) {
         ) : (
             <div class="print-container">
                 <div class="flex items-center gap-4 mb-6 border-b pb-4">
-                     <img src="/ShortLogo.svg" alt="Cancionero Digital" class="print-logo" />
+                     <img src="/medium-logo-light.svg" alt="Cancionero Digital" class="print-logo" />
                 </div>
 
-                <h1 class="text-accent-main">{song.title}</h1>
-                <h2>{song.artist}</h2>
+                <div class=" gap-4 mb-6">
+                    <h1 class="text-accent-main">{song.title}</h1>
+                    <h2>{song.artist}</h2>
+                </div>
                 
                 <div class="meta">
                     <span><strong>Tono:</strong> <span class="badge">{displayTone}</span></span>
@@ -147,7 +149,9 @@ if (id) {
                 <script>
                     window.onload = () => {
                         window.print();
+
                     }
+                    Astro.redirect("/");
                 </script>
             </div>
         )}

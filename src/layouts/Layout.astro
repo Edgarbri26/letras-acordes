@@ -48,12 +48,18 @@ import Footer from "@/components/footer.astro";
 		<meta property="twitter:title" content={title} />
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={new URL(image, Astro.url)} />
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+		/>
 	</head>
 	<body class="bg-bg-main text-text-main h-full w-full flex flex-col">
 		<Header class="" />
-		<div class="flex-1">
+		<div class="flex-1 pb-20">
 			<slot />
 		</div>
-		<Footer class="" />
+		<!-- <div class="fixed bottom-0 left-0 w-full z-50"> -->
+		<Footer />
+		<!-- </div> -->
 	</body>
 </html>

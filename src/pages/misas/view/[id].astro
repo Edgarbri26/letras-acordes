@@ -46,6 +46,147 @@ if (id) {
 ---
 
 <Layout title={misa ? `${misa.title} - Modo Lectura` : "Error"}>
+    <style is:global>
+        @media print {
+            @page {
+                margin: 2cm;
+                margin-top: 3cm; /* Generous top margin to prevent clipping */
+                margin-bottom: 2cm;
+                size: auto;
+            }
+
+            /* Hide UI elements */
+            header,
+            nav,
+            .no-print,
+            button,
+            a[href^="/"] {
+                display: none !important;
+            }
+
+            /* Reset Layout for Print */
+            html,
+            body {
+                height: auto !important;
+                overflow: visible !important;
+                display: block !important;
+                background: white !important;
+                color: black !important;
+                padding: 0 !important; /* Managed by @page */
+            }
+
+            /* Target the wrapper div from Layout */
+            body > div {
+                display: block !important;
+                height: auto !important;
+                flex: none !important;
+                overflow: visible !important;
+            }
+
+            /* Container resets */
+            .max-w-3xl {
+                max-width: none !important;
+                margin: 0 !important; /* Let @page handle margins */
+                padding: 0 !important;
+            }
+
+            /* Article Logic */
+            article {
+                border: none !important;
+                /* Avoid breaking inside to prevent chords getting cut off at top of next page */
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 3rem;
+                display: block;
+                padding-top: 1rem;
+            }
+
+            /* Header Styling */
+            .print-header {
+                display: flex !important;
+                align-items: center;
+                gap: 1rem;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 1rem;
+                margin-bottom: 2rem;
+            }
+
+            /* Fix Absolute Positioning Cut-off for Chords */
+            /* We need to target the individual SongLine divs inside the SongView */
+            .song-content > div > div {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                /* Add padding to top of each line so the absolute chords (which float up) 
+                   are contained within the layout box of the line. 
+                   This prevents them from being cut off if the line starts a page. */
+                padding-top: 1.2em !important;
+                display: block !important;
+            }
+            /* Compensate slightly for the extra spacing if needed, but clarity is key */
+
+            .print-logo {
+                height: 40px;
+            }
+
+            /* Text Colors */
+            p,
+            span,
+            div {
+                color: black !important;
+            }
+
+            /* Footer Styling - Force Layout footer to behave for print */
+            footer {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                border-top: 1px solid #eee !important;
+                padding-top: 10px !important;
+                background: white !important; /* Override dark theme */
+                color: black !important;
+                z-index: 100;
+                flex-direction: row !important; /* Ensure row layout */
+                justify-content: center;
+            }
+            footer p,
+            footer a {
+                color: black !important; /* Ensure footer text is black */
+            }
+
+            /* Prevent Orphan Headers */
+            section h2 {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+            }
+            /* Glue content to header */
+            section > div {
+                break-before: avoid !important;
+                page-break-before: avoid !important;
+            }
+        }
+        .print-header {
+            display: none;
+        }
+    </style>
+
+    <div class="print-header">
+        <img
+            src="/medium-logo-light.svg"
+            alt="Cancionero Digital"
+            class="print-logo"
+        />
+        <div>
+            <h1
+                class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-accent-main to-accent-light"
+            >
+                {misa?.title}
+            </h1>
+            <p class="text-gray-500 text-sm">Generado por Cancionero Digital</p>
+        </div>
+    </div>
+
     <div class="max-w-3xl mx-auto px-4 py-8">
         {
             error ? (
@@ -58,21 +199,33 @@ if (id) {
                     </a>
                 </div>
             ) : (
-                <div>
-                    <div class="mb-8 border-b border-white/10 pb-4 flex justify-between items-end">
-                        <div>
+                <main>
+                    <header class="mb-8 border-b border-white/10 pb-4 flex md:flex-row flex-col justify-between md:items-start items-center">
+                        <div class="md:text-start text-center">
                             <h1 class="text-3xl font-bold text-text-main">
                                 {misa?.title}
                             </h1>
-                            <p class="text-text-secondary mt-1">Modo Lectura</p>
+                            <p class="text-text-secondary  mt-1">
+                                Modo Lectura
+                            </p>
                         </div>
-                        <a
-                            href={`/misas/${id}${Astro.url.search}`}
-                            class="text-sm bg-bg-secondary px-4 py-2 rounded hover:bg-white/10 transition-colors"
-                        >
-                            Volver a Edición
-                        </a>
-                    </div>
+                        <div class="flex gap-2">
+                            <button
+                                id="printBtn"
+                                class="text-sm bg-accent-main text-white px-4 py-2 rounded hover:bg-accent-secondary transition-colors flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-print" />
+                                Descargar / Imprimir
+                            </button>
+                            <a
+                                href={`/misas/${id}${Astro.url.search}`}
+                                class="text-sm bg-bg-secondary px-4 py-2 rounded hover:bg-white/10 transition-colors flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-arrow-left" />
+                                Volver a Edición
+                            </a>
+                        </div>
+                    </header>
 
                     <div class="space-y-16">
                         {moments.map((moment) => {
@@ -116,8 +269,16 @@ if (id) {
                             );
                         })}
                     </div>
-                </div>
+                </main>
             )
         }
     </div>
+    <script>
+        const printBtn = document.getElementById("printBtn");
+        if (printBtn) {
+            printBtn.addEventListener("click", () => {
+                window.print();
+            });
+        }
+    </script>
 </Layout>

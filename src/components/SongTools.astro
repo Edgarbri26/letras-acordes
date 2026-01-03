@@ -14,17 +14,8 @@ const canEditSong = hasPermission(user, "song.edit");
         class="p-2 text-text-secondary hover:text-accent-main transition"
         title="Auto-scroll"
     >
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg
-        >
+        <i class="fa-solid fa-minus w-5 h-5 flex items-center justify-center"
+        ></i>
     </a>
 
     {/* Botones de Tono */}
@@ -34,7 +25,8 @@ const canEditSong = hasPermission(user, "song.edit");
             class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
             title="Subir Tono"
         >
-            +
+            <i class="fa-solid fa-plus w-5 h-5 flex items-center justify-center"
+            ></i>
         </button>
         <span class="text-xs text-text-secondary">Tono</span>
         <button
@@ -42,7 +34,9 @@ const canEditSong = hasPermission(user, "song.edit");
             class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
             title="Bajar Tono"
         >
-            -
+            <i
+                class="fa-solid fa-minus w-5 h-5 flex items-center justify-center"
+            ></i>
         </button>
     </div>
 
@@ -78,20 +72,8 @@ const canEditSong = hasPermission(user, "song.edit");
         class="p-2 text-text-secondary hover:text-accent-main transition"
         title="Imprimir"
     >
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><polyline points="6 9 6 2 18 2 18 9"></polyline><path
-                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"
-            ></path><rect width="12" height="8" x="6" y="14"></rect></svg
-        >
+        <i class="fa-solid fa-print w-5 h-5 flex items-center justify-center"
+        ></i>
     </a>
 </aside>
 

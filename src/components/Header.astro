@@ -41,17 +41,9 @@ const canViewAdmin = hasPermission(user, "view.admin");
                     type="search"
                     placeholder="¿Qué quieres tocar y cantar hoy?"
                 />
-                <svg
-                    class="absolute left-3 top-2.5 h-5 w-5 text-gray-500"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    ><circle cx="11" cy="11" r="8"></circle><path
-                        d="m21 21-4.3-4.3"></path></svg
-                >
+                <i
+                    class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 h-5 w-5 text-gray-500 flex items-center justify-center"
+                ></i>
             </div>
         </div>
 
@@ -61,19 +53,9 @@ const canViewAdmin = hasPermission(user, "view.admin");
                 class="md:hidden text-text-main hover:text-accent-main transition-colors"
                 aria-label="Toggle menu"
             >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 6h16M4 12h16m-7 6h7"></path>
-                </svg>
+                <i
+                    class="fa-solid fa-bars h-6 w-6 flex items-center justify-center"
+                ></i>
             </button>
             <ul
                 id="menu-list"

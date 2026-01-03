@@ -65,7 +65,7 @@ const formatDate = (dateString: string) => {
     title={misa ? `${misa.title} - CancioneroDigital` : "Misa no encontrada"}
 >
     <main
-        class="max-w-4xl mx-auto p-4"
+        class="max-w-4xl mx-auto px-4 pt-8 sm:px-8"
         data-token={token}
         data-edit-token={editToken}
     >
@@ -82,8 +82,8 @@ const formatDate = (dateString: string) => {
                 </div>
             ) : misa ? (
                 <div>
-                    <div class="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-                        <div class="flex justify-between items-start">
+                    <div class="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 ">
+                        <div class="flex justify-between flex-col sm:flex-row sm:items-start items-center ">
                             <div>
                                 <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">
                                     {misa.title}
@@ -188,63 +188,99 @@ const formatDate = (dateString: string) => {
 
                             return (
                                 <div class="flex flex-col gap-2">
-                                    <div class="flex items-center justify-start gap-2">
-                                        <h2 class="text-xl font-bold">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-start gap-2 sm:gap-4 border-b border-white/5 pb-2 last:border-0">
+                                        <h2 class="text-xl font-bold sm:w-32 flex-shrink-0 flex items-center gap-2">
                                             {moment.nombre}:
+                                            {misa.isOwner && (
+                                                <button
+                                                    data-moment-id={moment.id}
+                                                    class="sm:hidden add-song-btn text-xs h-6 w-6 bg-accent-main text-white font-bold rounded hover:saturate-200 transition-transform transform active:scale-95 flex items-center justify-center"
+                                                    title="Agregar canción"
+                                                >
+                                                    <i class="fa-solid fa-plus" />
+                                                </button>
+                                            )}
                                         </h2>
 
-                                        {momentSongs.map((ms: any) => (
-                                            <div class="flex items-center gap-1 group">
-                                                <a
-                                                    href={`/songs/${ms.song.id}?tone=${encodeURIComponent(ms.key || ms.song.key)}`}
-                                                    class="text-sm text-white bg-accent-main/30 border-2 border-accent-main
-                                                    rounded-full px-4 py-2 text-center font-medium hover:text-white hover:bg-accent-main transition flex items-center gap-2"
-                                                >
-                                                    <span class="text-center">
-                                                        {ms.song.title}
-                                                    </span>
-                                                    <span class="text-xs font-bold text-accent-main bg-white/20 px-1.5 py-0.5 rounded">
-                                                        {ms.key || ms.song.key}
-                                                    </span>
-                                                </a>
-                                                {token && (
-                                                    <button
-                                                        data-action="delete-song"
-                                                        data-misa-id={misa.id}
-                                                        data-misa-song-id={
-                                                            ms.id
-                                                        }
-                                                        class="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        title="Eliminar canción"
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            {momentSongs.map((ms: any) => (
+                                                <div class="flex items-center gap-1 group">
+                                                    <a
+                                                        href={`/songs/${ms.song.id}?tone=${encodeURIComponent(ms.key || ms.song.key)}`}
+                                                        class="text-sm text-white bg-accent-main/30 border-2 border-accent-main
+                                                        rounded-full px-4 py-2 text-center font-medium hover:text-white hover:bg-accent-main transition flex items-center gap-2"
                                                     >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            width="16"
-                                                            height="16"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            stroke-width="2"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
-                                                        >
-                                                            <path d="M3 6h18" />
-                                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                                        </svg>
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
+                                                        <span class="text-center">
+                                                            {ms.song.title}
+                                                        </span>
+                                                        {token ||
+                                                        misa.canEdit ? (
+                                                            <button
+                                                                data-action="edit-tone"
+                                                                data-misa-id={
+                                                                    misa.id
+                                                                }
+                                                                data-misa-song-id={
+                                                                    ms.id
+                                                                }
+                                                                data-current-tone={
+                                                                    ms.key ||
+                                                                    ms.song.key
+                                                                }
+                                                                class="text-xs font-bold text-accent-main bg-white/20 px-1.5 py-0.5 rounded hover:bg-white/40 transition-colors"
+                                                                title="Cambiar tono"
+                                                                onclick="event.preventDefault()"
+                                                            >
+                                                                {ms.key ||
+                                                                    ms.song.key}
+                                                            </button>
+                                                        ) : (
+                                                            <span class="text-xs font-bold text-accent-main bg-white/20 px-1.5 py-0.5 rounded">
+                                                                {ms.key ||
+                                                                    ms.song.key}
+                                                            </span>
+                                                        )}
+                                                    </a>
+                                                    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                                        {misa.canEdit && (
+                                                            <a
+                                                                href={`/edit-song/${ms.song.id}`}
+                                                                class="text-gray-400 hover:text-accent-main p-1 transition-colors"
+                                                                title="Editar canción"
+                                                            >
+                                                                <i class="fa-solid fa-pen-to-square w-4 h-4 flex items-center justify-center" />
+                                                            </a>
+                                                        )}
+                                                        {(token ||
+                                                            misa.canEdit) && (
+                                                            <button
+                                                                data-action="delete-song"
+                                                                data-misa-id={
+                                                                    misa.id
+                                                                }
+                                                                data-misa-song-id={
+                                                                    ms.id
+                                                                }
+                                                                class="text-gray-400 hover:text-red-500 p-1 transition-colors"
+                                                                title="Eliminar canción"
+                                                            >
+                                                                <i class="fa-solid fa-trash w-4 h-4 flex items-center justify-center" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
 
-                                        {misa.isOwner && (
-                                            <button
-                                                data-moment-id={moment.id}
-                                                class="add-song-btn text-sm h-10 w-10 bg-accent-main text-white font-bold rounded-lg hover:saturate-200 transition-transform transform active:scale-95 flex items-center justify-center"
-                                            >
-                                                +
-                                            </button>
-                                        )}
+                                            {misa.isOwner && (
+                                                <button
+                                                    data-moment-id={moment.id}
+                                                    class="hidden sm:block add-song-btn text-sm h-10 w-10 bg-accent-main text-white font-bold rounded-lg hover:saturate-200 transition-transform transform active:scale-95 flex items-center justify-center"
+                                                    title="Agregar canción"
+                                                >
+                                                    <i class="fa-solid fa-plus" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             );
@@ -298,6 +334,7 @@ const formatDate = (dateString: string) => {
         removeSongFromMisa,
         updateMisa,
         deleteMisa,
+        updateMisaSong,
     } from "../../services/misas";
     import {
         showError,
@@ -306,7 +343,73 @@ const formatDate = (dateString: string) => {
         showLoading,
     } from "@/utils/alerts";
 
+    import Swal from "sweetalert2";
+
     document.addEventListener("DOMContentLoaded", () => {
+        // Edit Tone Logic
+        const editToneBtns = document.querySelectorAll(
+            'button[data-action="edit-tone"]',
+        );
+        editToneBtns.forEach((btn) => {
+            btn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent navigation from parent anchor
+
+                const currentTone = btn.getAttribute("data-current-tone");
+                const misaId = Number(btn.getAttribute("data-misa-id"));
+                const misaSongId = Number(
+                    btn.getAttribute("data-misa-song-id"),
+                );
+                const token = document
+                    .querySelector("main")
+                    ?.getAttribute("data-token");
+                const editToken = document
+                    .querySelector("main")
+                    ?.getAttribute("data-edit-token");
+
+                const { value: newTone } = await Swal.fire({
+                    title: "Cambiar Tono",
+                    input: "text",
+                    inputLabel: "Nuevo tono (ej: Do, Re, Mim)",
+                    inputValue: currentTone || "",
+                    showCancelButton: true,
+                    confirmButtonColor: "#f97316",
+                    cancelButtonColor: "#4b5563",
+                    confirmButtonText: "Guardar",
+                    background: "#1f2937",
+                    color: "#fff",
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return "Debes escribir un tono";
+                        }
+                    },
+                });
+
+                if (newTone && newTone !== currentTone) {
+                    showLoading("Actualizando...");
+                    try {
+                        const res = await updateMisaSong(
+                            misaId,
+                            misaSongId,
+                            newTone,
+                            token || undefined,
+                            editToken || undefined,
+                        );
+                        if (res.success) {
+                            window.location.reload();
+                        } else {
+                            showError(
+                                "Error",
+                                res.error || "No se pudo actualizar el tono.",
+                            );
+                        }
+                    } catch (err) {
+                        showError("Error", "Error de conexión.");
+                    }
+                }
+            });
+        });
+
         const buttons = document.querySelectorAll(".add-song-btn");
         buttons.forEach((btn) => {
             btn.addEventListener("click", () => {
