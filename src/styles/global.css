@@ -12,7 +12,7 @@
 }
 
 @media print {
-    nav, footer, .no-print, .print-hidden {
+    nav, .no-print, .print-hidden {
         display: none !important;
     }
 

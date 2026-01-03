@@ -1,6 +1,7 @@
 ---
 import SongView from "../../components/SongView.jsx";
 import "../../styles/global.css";
+import Footer from "../../components/footer.astro";
 
 const { id } = Astro.params;
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
@@ -37,7 +38,7 @@ if (id) {
             /* Reset básico para impresión */
             body {
                 background: white !important;
-                color: black !important;
+                /* color: black !important; */
                 font-family: sans-serif;
                 margin: 0;
                 padding: 40px;
@@ -47,8 +48,14 @@ if (id) {
                 margin: 0 auto;
             }
              /* Ocultar elementos no deseados */
-            nav, footer, .no-print {
+            nav, .no-print {
                 display: none !important;
+            }
+
+            /* Logotipo para impresión: asegurar visibilidad si es blanco/claro */
+            .print-logo {
+                filter: brightness(0) saturate(100%); /* Vuelve el logo negro */
+                height: 48px;
             }
 
             /* Estilos del encabezado simple */
@@ -82,7 +89,7 @@ if (id) {
 
             /* Forzar el color de acento para impresión */
             .text-accent-main {
-                color: #f97316 !important; /* Aproximación al naranja usado, o usar variable CSS si funciona */
+                color: #f97316 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -95,6 +102,18 @@ if (id) {
             span.text-accent-main {
                 color: #f97316 !important;
             }
+            
+            /* Footer visible y posicionado */
+            footer {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                border-top: 1px solid #eee;
+                padding-top: 10px;
+                background: white;
+            }
         </style>
     </head>
     <body class="bg-white">
@@ -103,7 +122,7 @@ if (id) {
         ) : (
             <div class="print-container">
                 <div class="flex items-center gap-4 mb-6 border-b pb-4">
-                     <img src="/ShortLogo.svg" alt="Cancionero Digital" class="h-12" />
+                     <img src="/ShortLogo.svg" alt="Cancionero Digital" class="print-logo" />
                 </div>
 
                 <h1 class="text-accent-main">{song.title}</h1>
@@ -124,6 +143,7 @@ if (id) {
                     />
                 </div>
 
+
                 <script>
                     window.onload = () => {
                         window.print();
@@ -131,5 +151,6 @@ if (id) {
                 </script>
             </div>
         )}
+        <Footer />
     </body>
 </html>

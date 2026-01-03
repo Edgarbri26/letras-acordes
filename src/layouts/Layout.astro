@@ -51,8 +51,9 @@ import Footer from "@/components/footer.astro";
 	</head>
 	<body class="bg-bg-main text-text-main h-full w-full flex flex-col">
 		<Header class="" />
-
-		<slot class="flex-1" />
+		<div class="flex-1">
+			<slot />
+		</div>
 		<Footer class="" />
 	</body>
 </html>
