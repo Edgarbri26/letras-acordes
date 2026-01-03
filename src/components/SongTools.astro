@@ -1,5 +1,9 @@
 ---
+import { getUserFromToken, hasPermission } from "../utils/auth";
 const { id } = Astro.props;
+const token = Astro.cookies.get("token")?.value;
+const user = getUserFromToken(token);
+const canEditSong = hasPermission(user, "song.edit");
 ---
 
 <aside
@@ -43,25 +47,31 @@ const { id } = Astro.props;
     </div>
 
     <div class="h-px w-8 bg-white/10 my-1"></div>
-    <a
-        href={`/edit-song/${id}`}
-        class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
-        title="Editar"
-    >
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            class="lucide lucide-pencil"
-            ><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"
-            ></path><path d="m15 5 4 4"></path></svg
-        >
-    </a>
+
+    {
+        canEditSong && (
+            <a
+                href={`/edit-song/${id}`}
+                class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
+                title="Editar"
+            >
+                <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-pencil"
+                >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                </svg>
+            </a>
+        )
+    }
     <a
         id="btn-print"
         href={`/print-song/${id}${Astro.url.search}`}

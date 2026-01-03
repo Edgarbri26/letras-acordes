@@ -5,11 +5,24 @@ import type { Category } from "../../types/category";
 import ChordEditor from "../../components/ChordEditor.jsx";
 import KeySelector from "../../components/KeySelector.astro";
 import "../../styles/global.css";
-import { updateSong } from "../../services/songs";
+import { updateSong, deleteSong } from "../../services/songs";
+import { getUserFromToken, hasPermission } from "../../utils/auth";
+import {
+    showError,
+    showSuccessToast,
+    showConfirm,
+    showLoading,
+} from "../../utils/alerts";
 
 const token = Astro.cookies.get("token")?.value;
-if (!token) {
+const user = getUserFromToken(token);
+
+if (!token || !user) {
     return Astro.redirect("/login");
+}
+
+if (!hasPermission(user, "song.edit")) {
+    return Astro.redirect("/");
 }
 
 const { id } = Astro.params;
@@ -60,7 +73,10 @@ if (Astro.request.method === "POST") {
 
 <Layout title="Editar Canción">
     <div class="flex flex-col min-h-screen bg-bg-main text-text-main">
-        <main class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10">
+        <main
+            class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10"
+            data-token={token}
+        >
             <h1 class="text-3xl font-bold text-accent-main mb-8">
                 Editar Canción
             </h1>
@@ -112,7 +128,7 @@ if (Astro.request.method === "POST") {
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="space-y-2">
                         <label
                             for="url_song"
@@ -151,6 +167,30 @@ if (Astro.request.method === "POST") {
                             }
                         </select>
                     </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="active"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Estado</label
+                        >
+                        <div
+                            class="flex items-center space-x-3 bg-bg-secondary border border-white/10 rounded-lg p-3 h-[50px]"
+                        >
+                            <input
+                                type="checkbox"
+                                id="active"
+                                name="active"
+                                class="w-5 h-5 text-accent-main rounded focus:ring-accent-main bg-gray-700 border-gray-600 cursor-pointer"
+                                checked={song.active !== false}
+                            />
+                            <span
+                                class="text-text-main cursor-pointer"
+                                onclick="document.getElementById('active').click()"
+                                >Canción Activa</span
+                            >
+                        </div>
+                    </div>
                 </div>
 
                 <div class="border-t border-white/10 pt-6 flex flex-col gap-20">
@@ -169,7 +209,16 @@ if (Astro.request.method === "POST") {
                         initialContent={song.content}
                         initialKey={song.key}
                     />
-                    <div class="pt-4 flex justify-end">
+                    <div class="pt-4 flex justify-between items-center">
+                        <button
+                            type="button"
+                            id="deleteSongBtn"
+                            data-song-id={song.id}
+                            class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/50 font-bold py-3 px-8 rounded-lg transition-colors"
+                        >
+                            Eliminar Canción
+                        </button>
+
                         <button
                             type="submit"
                             class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20"
@@ -184,6 +233,9 @@ if (Astro.request.method === "POST") {
 </Layout>
 
 <script>
+import { deleteSong } from "@/services/songs";
+import { showConfirm, showLoading, showSuccessToast, showError } from "@/utils/alerts";
+
     const keySelect = document.getElementById("key") as HTMLSelectElement;
 
     // Escuchar cambios desde el editor de acordes
@@ -205,4 +257,58 @@ if (Astro.request.method === "POST") {
             }),
         );
     });
+
+    // Delete Logic
+    const deleteBtn = document.getElementById("deleteSongBtn");
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            const songId = deleteBtn.getAttribute("data-song-id");
+            if (!songId) return;
+
+            const confirmed = await showConfirm(
+                "¿Eliminar canción?",
+                "Esta acción no se puede deshacer.",
+                "Sí, eliminar",
+            );
+
+            if (confirmed.isConfirmed) {
+                showLoading("Eliminando...");
+                try {
+                    // Need token from somewhere. Since this is client-side script in Astro,
+                    // we might need to get it from a data attribute or cookie if the service handles it.
+                    // The service `deleteSong` takes an optional token.
+                    // Let's assume the service can read the cookie if not passed,
+                    // OR we pass it. The layout usually doesn't expose raw token in DOM for security
+                    // but we can try relying on the service's cookie capability (if modified)
+                    // or just pass it if we have it available.
+                    // Looking at `deleteSong` implementation, it takes `token`.
+                    // We can read the cookie 'token' in JS using a helper or regex if needed.
+                    // Or clearer: put token in a meta tag or data attr.
+                    // Let's check how other pages do it. `misas/[id]` gets it from `document.querySelector("main")?.getAttribute("data-token")`.
+                    // Let's add data-token to main.
+
+                    const token = document
+                        .querySelector("main")
+                        ?.getAttribute("data-token");
+
+                    const res = await deleteSong(
+                        parseInt(songId),
+                        token || undefined,
+                    );
+                    if (res.success) {
+                        await showSuccessToast(
+                            "Canción eliminada",
+                            undefined,
+                            1500,
+                        );
+                        window.location.href = "/";
+                    } else {
+                        showError("Error", res.error || "Error al eliminar");
+                    }
+                } catch (e) {
+                    showError("Error", "Error de conexión");
+                }
+            }
+        });
+    }
 </script>

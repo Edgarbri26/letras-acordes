@@ -7,12 +7,19 @@ import { supabase } from "@/lib/supabase";
 import "../styles/global.css";
 import type { Category } from "@/types/category";
 import { createSong } from "@/services/songs";
+import { getUserFromToken, hasPermission } from "@/utils/auth";
 
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 const token = Astro.cookies.get("token")?.value;
-if (!token) {
+const user = getUserFromToken(token);
+
+if (!token || !user) {
     return Astro.redirect("/login");
+}
+
+if (!hasPermission(user, "song.create")) {
+    return Astro.redirect("/");
 }
 
 let categories: Category[] = [];
@@ -234,23 +241,10 @@ if (Astro.request.method === "POST") {
     </dialog>
 
     <script define:vars={{ API_URL, errorMessage }}>
-        import Swal from "sweetalert2";
-
-        // Configuración común para SweetAlert en modo oscuro
-        const swalDark = {
-            background: "#1f2937",
-            color: "#fff",
-            confirmButtonColor: "#f97316",
-            cancelButtonColor: "#4b5563",
-        };
+        import { showError, showSuccessToast } from "@/utils/alerts";
 
         if (errorMessage) {
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: errorMessage,
-                ...swalDark,
-            });
+            showError("Error", errorMessage);
         }
 
         // --- Category Logic ---
@@ -306,33 +300,15 @@ if (Astro.request.method === "POST") {
 
                         modalCategory?.close();
 
-                        Swal.fire({
-                            icon: "success",
-                            title: "¡Categoría creada!",
-                            toast: true,
-                            position: "top-end",
-                            showConfirmButton: false,
-                            timer: 3000,
-                            ...swalDark,
-                        });
+                        showSuccessToast("¡Categoría creada!");
                     } else {
                         const err = await res.json();
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Error al crear la categoría",
-                            ...swalDark,
-                        });
+                        showError("Error", "Error al crear la categoría");
                         console.error(err);
                     }
                 } catch (e) {
                     console.error(e);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "Error de conexión",
-                        ...swalDark,
-                    });
+                    showError("Error", "Error de conexión");
                 } finally {
                     btnSaveCategory.disabled = false;
                     btnSaveCategory.textContent = "Guardar";

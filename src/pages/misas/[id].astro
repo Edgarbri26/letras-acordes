@@ -294,16 +294,17 @@ const formatDate = (dateString: string) => {
 </Layout>
 
 <script>
-    import { removeSongFromMisa, updateMisa } from "../../services/misas";
-    import Swal from "sweetalert2";
-
-    // Configuración común para SweetAlert en modo oscuro
-    const swalDark = {
-        background: "#1f2937",
-        color: "#fff",
-        confirmButtonColor: "#f97316",
-        cancelButtonColor: "#4b5563",
-    };
+    import {
+        removeSongFromMisa,
+        updateMisa,
+        deleteMisa,
+    } from "../../services/misas";
+    import {
+        showError,
+        showSuccessToast,
+        showConfirm,
+        showLoading,
+    } from "@/utils/alerts";
 
     document.addEventListener("DOMContentLoaded", () => {
         const buttons = document.querySelectorAll(".add-song-btn");
@@ -313,12 +314,10 @@ const formatDate = (dateString: string) => {
                 if ((window as any).openAddSongModal) {
                     (window as any).openAddSongModal(momentId);
                 } else {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "El gestor de canciones no está cargado. Intenta recargar la página.",
-                        ...swalDark,
-                    });
+                    showError(
+                        "Error",
+                        "El gestor de canciones no está cargado. Intenta recargar la página.",
+                    );
                 }
             });
         });
@@ -330,16 +329,11 @@ const formatDate = (dateString: string) => {
             btn.addEventListener("click", async (e) => {
                 e.preventDefault();
 
-                const result = await Swal.fire({
-                    title: "¿Eliminar canción?",
-                    text: "No podrás deshacer esta acción",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Sí, eliminar",
-                    cancelButtonText: "Cancelar",
-                    reverseButtons: true,
-                    ...swalDark,
-                });
+                const result = await showConfirm(
+                    "¿Eliminar canción?",
+                    "No podrás deshacer esta acción",
+                    "Sí, eliminar",
+                );
 
                 if (!result.isConfirmed) return;
 
@@ -357,15 +351,7 @@ const formatDate = (dateString: string) => {
 
                 if (misaId && misaSongId && (token || editToken)) {
                     // Mostrar loading
-                    Swal.fire({
-                        title: "Eliminando...",
-                        didOpen: () => {
-                            Swal.showLoading();
-                        },
-                        background: "#1f2937",
-                        color: "#fff",
-                        allowOutsideClick: false,
-                    });
+                    showLoading("Eliminando...");
 
                     try {
                         const res = await removeSongFromMisa(
@@ -377,54 +363,37 @@ const formatDate = (dateString: string) => {
                         if (res.success) {
                             window.location.reload();
                         } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text: res.error || "Error al eliminar.",
-                                ...swalDark,
-                            });
+                            showError(
+                                "Error",
+                                res.error || "Error al eliminar.",
+                            );
                         }
                     } catch (error) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Error de conexión.",
-                            ...swalDark,
-                        });
+                        showError("Error", "Error de conexión.");
                     }
                 }
             });
         });
 
-        const copyToClipboard = (
+        const copyToClipboard = async (
             text: string,
             successTitle: string,
             successText: string,
         ) => {
-            navigator.clipboard
-                .writeText(text)
-                .then(() => {
-                    Swal.fire({
-                        icon: "success",
-                        title: successTitle,
-                        text: successText,
-                        toast: true,
-                        position: "top-end",
-                        showConfirmButton: false,
-                        timer: 3000,
-                        background: "#1f2937",
-                        color: "#fff",
-                    });
-                })
-                .catch((err) => {
-                    console.error("Error al copiar", err);
-                    Swal.fire({
-                        icon: "error",
-                        title: "Error",
-                        text: "No se pudo copiar el enlace.",
-                        ...swalDark,
-                    });
-                });
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                    showSuccessToast(successTitle, successText);
+                } else {
+                    throw new Error("Clipboard API not available");
+                }
+            } catch (err) {
+                console.error("Error al copiar", err);
+                showError(
+                    "Error",
+                    "No se pudo copiar el enlace. Intenta hacerlo manualmente.",
+                );
+            }
         };
 
         const copyShareLinkBtn = document.getElementById("copyShareLinkBtn");
@@ -439,6 +408,12 @@ const formatDate = (dateString: string) => {
                         "¡Enlace copiado!",
                         "Compártelo con quien quieras.",
                     );
+                } else {
+                    console.error("No share token found");
+                    showError(
+                        "Error",
+                        "No se encontró el token para compartir.",
+                    );
                 }
             });
         }
@@ -448,6 +423,8 @@ const formatDate = (dateString: string) => {
             copyEditorLinkBtn.addEventListener("click", () => {
                 const editToken =
                     copyEditorLinkBtn.getAttribute("data-edit-token");
+                console.log("Copy Editor Btn clicked. Token:", editToken);
+
                 if (editToken) {
                     const url = `${window.location.origin}${window.location.pathname}?edit_token=${editToken}`;
                     copyToClipboard(
@@ -455,6 +432,9 @@ const formatDate = (dateString: string) => {
                         "¡Enlace de Editor copiado!",
                         "Ten cuidado con quién lo compartes.",
                     );
+                } else {
+                    console.error("No edit token found on button");
+                    showError("Error", "No se encontró el token de edición.");
                 }
             });
         }
@@ -517,6 +497,7 @@ const formatDate = (dateString: string) => {
                     }
 
                     try {
+                        console.log("Calling updateMisa...");
                         const res = await updateMisa(
                             parseInt(misaId),
                             title,
@@ -525,25 +506,21 @@ const formatDate = (dateString: string) => {
                             token || undefined,
                             editToken || undefined,
                         );
+                        console.log("updateMisa result:", res);
 
                         if (res.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "¡Actualizado!",
-                                text: "Los datos de la misa se han guardado",
-                                timer: 1500,
-                                showConfirmButton: false,
-                                ...swalDark,
-                            }).then(() => {
-                                window.location.reload();
-                            });
+                            console.log("Success, showing toast...");
+                            await showSuccessToast(
+                                "¡Actualizado!",
+                                "Los datos de la misa se han guardado",
+                            );
+                            console.log("Toast shown, reloading...");
+                            window.location.reload();
                         } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text: res.error || "Error al actualizar",
-                                ...swalDark,
-                            });
+                            showError(
+                                "Error",
+                                res.error || "Error al actualizar",
+                            );
 
                             if (submitBtn) {
                                 submitBtn.removeAttribute("disabled");
@@ -552,16 +529,55 @@ const formatDate = (dateString: string) => {
                         }
                     } catch (error) {
                         console.error(error);
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "Error de conexión",
-                            ...swalDark,
-                        });
+                        showError("Error", "Error de conexión");
+
                         if (submitBtn) {
                             submitBtn.removeAttribute("disabled");
                             submitBtn.textContent = originalText;
                         }
+                    }
+                }
+            });
+        }
+
+        const deleteMisaBtn = document.getElementById("deleteMisaBtn");
+        if (deleteMisaBtn) {
+            deleteMisaBtn.addEventListener("click", async () => {
+                const editMisaForm = document.getElementById(
+                    "editMisaForm",
+                ) as HTMLFormElement;
+                const misaId = editMisaForm?.getAttribute("data-misa-id");
+                const token = document
+                    .querySelector("main")
+                    ?.getAttribute("data-token");
+
+                if (!misaId || !token) return;
+
+                const confirmed = await showConfirm(
+                    "¿Eliminar misa?",
+                    "Esta acción no se puede deshacer.",
+                    "Sí, eliminar",
+                );
+
+                if (confirmed.isConfirmed) {
+                    showLoading("Eliminando...");
+                    try {
+                        const res = await deleteMisa(parseInt(misaId), token);
+                        if (res.success) {
+                            await showSuccessToast(
+                                "Misa eliminada",
+                                undefined,
+                                1500,
+                            );
+                            window.location.href = "/misas";
+                        } else {
+                            showError(
+                                "Error",
+                                res.error || "Error al eliminar",
+                            );
+                        }
+                    } catch (e) {
+                        showError("Error", "Error de conexión");
                     }
                 }
             });
@@ -639,7 +655,14 @@ const formatDate = (dateString: string) => {
                     >
                 </select>
             </div>
-            <div class="flex justify-end pt-4">
+            <div class="flex justify-between pt-4">
+                <button
+                    type="button"
+                    id="deleteMisaBtn"
+                    class="bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 font-bold py-2 px-6 rounded-lg transition-colors"
+                >
+                    Eliminar Misa
+                </button>
                 <button
                     type="submit"
                     class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-2 px-6 rounded-lg transition-transform transform active:scale-95"

@@ -134,3 +134,27 @@ export const removeSongFromMisa = async (misaId: number, misaSongId: number, tok
         return { success: false, error: "Error de conexión." };
     }
 };
+
+export const deleteMisa = async (id: number, token: string | undefined): Promise<ServiceResponse<any>> => {
+    try {
+        const headers: HeadersInit = {};
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/misas/${id}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            return { success: false, error: err.error || "Error al eliminar la misa." };
+        }
+
+        return { success: true };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};

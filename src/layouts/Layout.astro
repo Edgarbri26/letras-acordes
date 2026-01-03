@@ -18,6 +18,7 @@ const canonicalURL = new URL(
 );
 
 import Header from "../components/Header.astro";
+import Footer from "@/components/footer.astro";
 ---
 
 <!doctype html>
@@ -51,5 +52,7 @@ import Header from "../components/Header.astro";
 	<body class="bg-bg-main text-text-main h-full w-full">
 		<Header />
 		<slot />
+
+		<Footer />
 	</body>
 </html>

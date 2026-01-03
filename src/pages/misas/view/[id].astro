@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import type { Misa, Moment } from "../../../types/misa";
 import { getMoments } from "../../../services/moments";
 import SongView from "../../../components/SongView.jsx";
 import HeaderLyric from "../../../components/HeaderLyric.astro";
@@ -7,14 +8,14 @@ import HeaderLyric from "../../../components/HeaderLyric.astro";
 const { id } = Astro.params;
 const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
-let misa = null;
+let misa: Misa | null = null;
 let error = null;
-let moments = [];
+let moments: Moment[] = [];
 let token = Astro.cookies.get("token")?.value;
 
 if (id) {
     try {
-        const headers = {};
+        const headers: Record<string, string> = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const url = new URL(`${API_URL}/misas/${id}`);
@@ -61,7 +62,7 @@ if (id) {
                     <div class="mb-8 border-b border-white/10 pb-4 flex justify-between items-end">
                         <div>
                             <h1 class="text-3xl font-bold text-text-main">
-                                {misa.title}
+                                {misa?.title}
                             </h1>
                             <p class="text-text-secondary mt-1">Modo Lectura</p>
                         </div>
@@ -75,10 +76,10 @@ if (id) {
 
                     <div class="space-y-16">
                         {moments.map((moment) => {
-                            const momentSongs = misa.misaSongs.filter(
+                            const momentSongs = misa?.misaSongs.filter(
                                 (ms) => ms.momentId === moment.id,
                             );
-                            if (momentSongs.length === 0) return null;
+                            if (momentSongs?.length === 0) return null;
 
                             return (
                                 <section>
@@ -86,7 +87,7 @@ if (id) {
                                         {moment.nombre}
                                     </h2>
                                     <div class="space-y-12">
-                                        {momentSongs.map((ms) => (
+                                        {momentSongs?.map((ms) => (
                                             <article class="bg-bg-secondary/30 rounded-xl p-6 border border-white/5">
                                                 <div class="mb-4">
                                                     <HeaderLyric

@@ -1,6 +1,11 @@
 ---
+import { getUserFromToken, hasPermission } from "../utils/auth";
 const token = Astro.cookies.get("token")?.value;
-const isLoggedIn = !!token;
+const user = getUserFromToken(token);
+const isLoggedIn = !!user;
+
+const canCreateSong = hasPermission(user, "song.create");
+const canViewAdmin = hasPermission(user, "view.admin");
 ---
 
 <header
@@ -55,10 +60,14 @@ const isLoggedIn = !!token;
                     <a href="/misas">Misas</a>
                 </li>
                 {
-                    isLoggedIn && (
+                    isLoggedIn && canCreateSong && (
                         <li class="hover:text-text-main cursor-pointer transition-colors">
                             <a href="/add-song">Add</a>
                         </li>
+                    )
+                }
+                {
+                    isLoggedIn && canViewAdmin && (
                         <li class="hover:text-text-main cursor-pointer transition-colors">
                             <a href="/admin/users">users</a>
                         </li>

@@ -15,7 +15,8 @@ const extractSongData = (formData: FormData): Omit<Song, "id" | "category"> => {
         key: formData.get("key")?.toString() || "C",
         url_song: formData.get("url_song")?.toString() || "",
         content: formData.get("content")?.toString() || "",
-        categoryId: parseInt(formData.get("categoryId")?.toString() || "1")
+        categoryId: parseInt(formData.get("categoryId")?.toString() || "1"),
+        active: formData.get("active") === "on"
     };
 };
 
@@ -96,5 +97,28 @@ export const searchSongs = async (query: string, categoryId: string = ""): Promi
     } catch (e) {
         console.error("Service exception:", e);
         return { success: false, error: "Error de conexión." };
+    }
+};
+export const deleteSong = async (id: number, token?: string): Promise<ServiceResponse> => {
+    try {
+        const headers: HeadersInit = {};
+        if (token) {
+            headers["Cookie"] = `token=${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/songs/${id}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        if (!res.ok) {
+            const errData = await res.json();
+            return { success: false, error: "Error al eliminar la canción.", data: errData };
+        }
+
+        return { success: true };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión con el servidor." };
     }
 };

@@ -81,6 +81,7 @@ const token = Astro.cookies.get("token")?.value;
 
 <script>
     import { createMisa } from "../../services/misas";
+    import { showError, showSuccessToast } from "@/utils/alerts";
 
     const form = document.getElementById("addMisaForm") as HTMLFormElement;
 
@@ -93,7 +94,10 @@ const token = Astro.cookies.get("token")?.value;
         const token = form.getAttribute("data-token");
 
         if (!token) {
-            alert("No estás autenticado. Por favor inicia sesión.");
+            await showError(
+                "Error",
+                "No estás autenticado. Por favor inicia sesión.",
+            );
             window.location.href = "/login";
             return;
         }
@@ -106,9 +110,10 @@ const token = Astro.cookies.get("token")?.value;
         );
 
         if (success) {
+            await showSuccessToast("Misa creada correctamente");
             window.location.href = "/misas";
         } else {
-            alert(error || "Error al crear la misa");
+            showError("Error", error || "Error al crear la misa");
         }
     });
 </script>

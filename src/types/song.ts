@@ -9,5 +9,6 @@ export type Song = {
     url_song: string;
     categoryId: number;
     category: Category | null;
+    active: boolean;
 }
 
