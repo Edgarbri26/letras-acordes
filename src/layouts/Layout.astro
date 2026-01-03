@@ -49,10 +49,10 @@ import Footer from "@/components/footer.astro";
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={new URL(image, Astro.url)} />
 	</head>
-	<body class="bg-bg-main text-text-main h-full w-full">
-		<Header />
-		<slot />
+	<body class="bg-bg-main text-text-main h-full w-full flex flex-col">
+		<Header class="" />
 
-		<Footer />
+		<slot class="flex-1" />
+		<Footer class="" />
 	</body>
 </html>

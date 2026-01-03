@@ -1,59 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import "../styles/global.css";
-
-import { login } from "../services/auth";
-
-let errorMessage = "";
-
-if (Astro.request.method === "POST") {
-    try {
-        const data = await Astro.request.formData();
-        const email = data.get("email");
-        const password = data.get("password");
-
-        const response = await login(email, password);
-
-        if (response && response.ok) {
-            // Forward cookies from backend to client
-            const setCookie = response.headers.get("set-cookie");
-
-            if (setCookie) {
-                // Extract token from cookie string (assuming format "token=...; ...")
-                const match = setCookie.match(/token=([^;]+)/);
-                const token = match ? match[1] : null;
-
-                if (token) {
-                    Astro.cookies.set("token", token, {
-                        path: "/",
-                        httpOnly: true,
-                        secure: import.meta.env.PROD,
-                        sameSite: "lax",
-                    });
-                    return Astro.redirect("/");
-                }
-            } else {
-                // Fallback: try to see if token is in body
-                const body = await response.json();
-                if (body.token) {
-                    Astro.cookies.set("token", body.token, {
-                        path: "/",
-                        httpOnly: true,
-                        secure: import.meta.env.PROD,
-                        sameSite: "lax",
-                    });
-                    return Astro.redirect("/");
-                }
-            }
-            errorMessage = "Error: No se recibió el token de autenticación.";
-        } else {
-            errorMessage = "Credenciales incorrectas.";
-        }
-    } catch (error) {
-        console.error(error);
-        errorMessage = "Error de conexión.";
-    }
-}
 ---
 
 <Layout title="Iniciar Sesión - Cancionero">
@@ -67,7 +14,7 @@ if (Astro.request.method === "POST") {
                 Iniciar Sesión
             </h1>
 
-            <form id="loginForm" method="POST" class="space-y-6">
+            <form id="loginForm" class="space-y-6">
                 <div>
                     <label
                         for="email"
@@ -112,27 +59,19 @@ if (Astro.request.method === "POST") {
     </div>
 </Layout>
 
-<script define:vars={{ errorMessage }}>
-    import Swal from "sweetalert2";
+<script>
+    import { showAlert, showSuccessToast } from "../utils/alerts";
 
-    // Manejo de errores recibidos del servidor
-    if (errorMessage) {
-        Swal.fire({
-            icon: "error",
-            title: "Error de acceso",
-            text: errorMessage,
-            background: "#1f2937",
-            color: "#fff",
-            confirmButtonColor: "#f97316",
-        });
-    }
+    const form = document.getElementById("loginForm") as HTMLFormElement;
+    const btn = document.getElementById("submitBtn") as HTMLButtonElement;
 
-    const form = document.getElementById("loginForm");
-    const btn = document.getElementById("submitBtn");
+    if (form && btn) {
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-    form?.addEventListener("submit", () => {
-        if (btn) {
-            btn.setAttribute("disabled", "true");
+            // Disable button and show loading state
+            const originalBtnContent = btn.innerHTML;
+            btn.disabled = true;
             btn.innerHTML = `
                 <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -141,6 +80,48 @@ if (Astro.request.method === "POST") {
                 <span>Ingresando...</span>
             `;
             btn.classList.add("opacity-75", "cursor-not-allowed");
-        }
-    });
+
+            try {
+                const formData = new FormData(form);
+                const email = formData.get("email");
+                const password = formData.get("password");
+
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    await showSuccessToast("Sesión iniciada correctamente");
+                    window.location.href = "/";
+                } else {
+                    showAlert({
+                        icon: "error",
+                        title: "Error de acceso",
+                        text: data.message || "Credenciales incorrectas",
+                    });
+                    // Reset button state
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnContent;
+                    btn.classList.remove("opacity-75", "cursor-not-allowed");
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert({
+                    icon: "error",
+                    title: "Error de conexión",
+                    text: "No se pudo conectar con el servidor",
+                });
+                // Reset button state
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+                btn.classList.remove("opacity-75", "cursor-not-allowed");
+            }
+        });
+    }
 </script>
