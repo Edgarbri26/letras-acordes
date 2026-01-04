@@ -96,6 +96,7 @@ const formatDate = (dateString: string) => {
                                 {misa.visibility === "PRIVATE" &&
                                     (misa.isOwner ||
                                         token ||
+                                        editToken ||
                                         Astro.url.searchParams.get(
                                             "share_token",
                                         )) && (

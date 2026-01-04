@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { transposeText, transposeChord } from '../utils/music';
 import ChordToolbar from './ChordToolbar';
+import SongLine from './SongLine';
 
 export default function ChordEditor({ name = "content", initialContent = "", initialKey = "C" }) {
     // Estado inicial vacío o con instrucciones
@@ -68,13 +69,50 @@ export default function ChordEditor({ name = "content", initialContent = "", ini
         }));
     };
 
+    const addSection = (type) => {
+        const textarea = textareaRef.current;
+        if (!textarea) return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const text = textarea.value;
+
+        let insertText = "";
+
+        if (type === "Coro") {
+            insertText = "{c: Coro}\n";
+        } else if (type === "Estrofa") {
+            // Contar estrofas existentes para auto-incrementar
+            // Buscamos todas las ocurrencias de {c: Estrofa N}
+            const matches = [...text.matchAll(/\{c:\s*Estrofa\s*(\d+)\}/gi)];
+
+            let maxNum = 0;
+            matches.forEach(m => {
+                const num = parseInt(m[1], 10);
+                if (!isNaN(num) && num > maxNum) {
+                    maxNum = num;
+                }
+            });
+
+            insertText = `{c: Estrofa ${maxNum + 1}}\n`;
+        }
+
+        const newText = text.substring(0, start) + insertText + text.substring(end);
+        setContent(newText);
+
+        setTimeout(() => {
+            textarea.focus();
+            textarea.setSelectionRange(start + insertText.length, start + insertText.length);
+        }, 0);
+    };
+
     return (
         <div className="space-y-4">
             {/* TRUCO: Input oculto para que el formulario de Astro reciba los datos */}
             <input type="hidden" name={name} value={content} />
 
             {/* Botonera Reutilizable */}
-            <ChordToolbar onTranspose={handleTranspose} onInsertChord={addChord} />
+            <ChordToolbar onTranspose={handleTranspose} onInsertChord={addChord} onInsertSection={addSection} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Área de Edición */}
@@ -85,7 +123,7 @@ export default function ChordEditor({ name = "content", initialContent = "", ini
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         className="w-full flex-1 bg-bg-secondary border border-white/10 rounded-lg p-4 font-mono text-sm text-text-main focus:outline-none focus:border-accent-main resize-none placeholder-white/20"
-                        placeholder="Escribe la letra aquí y presiona los botones de acordes para insertar...&#10;Ejemplo: Dios es[C]ta aqui"
+                        placeholder="Escribe la letra aquí y presiona los botones de acordes para insertar y los botones de secciones para insertar coro o estrofa...&#10;Ejemplo:&#10; {c: Estrofa 1}&#10; Dios es[C]ta aqui"
                     />
                 </div>
 
@@ -94,7 +132,7 @@ export default function ChordEditor({ name = "content", initialContent = "", ini
                     <label className="text-sm font-medium text-text-secondary mb-2">Vista Previa (En vivo)</label>
                     <div className="w-full flex-1 bg-[#fffbf6] text-gray-900 border border-white/10 rounded-lg p-6 overflow-y-auto shadow-inner">
                         {content.split('\n').map((line, i) => (
-                            <LineRenderer key={i} line={line} />
+                            <SongLine key={i} line={line} />
                         ))}
                     </div>
                 </div>
@@ -102,27 +140,3 @@ export default function ChordEditor({ name = "content", initialContent = "", ini
         </div>
     );
 }
-
-// Renderizador visual (El que arreglamos anteriormente)
-const LineRenderer = ({ line }) => {
-    if (!line) return <div className="h-8"></div>;
-    const segments = line.split(/(\[.*?\])/);
-
-    return (
-        <div className="relative font-mono text-lg whitespace-pre-wrap leading-[3.5rem]">
-            {segments.map((seg, i) => {
-                const match = seg.match(/^\[(.*?)\]$/);
-                if (match) {
-                    return (
-                        <span key={i} className="inline-block relative w-0 overflow-visible align-baseline">
-                            <span className="absolute bottom-[1.2em] left-0 -translate-x-1/2 text-red-600 font-bold text-sm select-none whitespace-nowrap">
-                                {match[1]}
-                            </span>
-                        </span>
-                    );
-                }
-                return <span key={i}>{seg}</span>;
-            })}
-        </div>
-    );
-};

@@ -143,8 +143,8 @@
         align-items: center;
         gap: 1rem;
         border-bottom: 1px solid #ccc;
-        padding-bottom: 1rem;
-        margin-bottom: 2rem;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
     }
 
     /* Fix Absolute Positioning Cut-off for Chords */

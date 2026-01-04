@@ -173,7 +173,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const shareToken =
                 copyShareLinkBtn.getAttribute("data-share-token");
             if (shareToken) {
-                const url = `${window.location.origin}${window.location.pathname}?share_token=${shareToken}`;
+                // Construct URL to point to /misas/view/:id
+                const path = window.location.pathname.replace("/misas/", "/misas/view/");
+                const url = `${window.location.origin}${path}?share_token=${shareToken}`;
                 copyToClipboard(
                     url,
                     "¡Enlace copiado!",

@@ -7,7 +7,7 @@ const canEditSong = hasPermission(user, "song.edit");
 ---
 
 <aside
-    class="w-16 flex flex-col items-center py-4 gap-4 sticky top-16 h-[calc(100vh-4rem)] border-r border-white/5 md:flex"
+    class="w-16 flex flex-col items-center py-4 gap-4 sticky top-16 h-[calc(100vh-4rem)] border-r border-white/5 md:flex no-print"
 >
     <a
         href={`/`}
@@ -41,15 +41,25 @@ const canEditSong = hasPermission(user, "song.edit");
 
     <div class="h-px w-8 bg-white/10 my-1"></div>
 
-    <a
+    <button
+        id="btn-toggle-chords"
+        class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
+        title="Alternar Acordes"
+    >
+        <i class="fa-solid fa-music w-5 h-5 flex items-center justify-center"
+        ></i>
+        <span class="text-[10px]">Acordes</span>
+    </button>
+
+    <div class="h-px w-8 bg-white/10 my-1"></div>
+    <button
         id="btn-print"
-        href={`/print-song/${id}${Astro.url.search}`}
         class="p-2 text-text-secondary hover:text-accent-main transition"
         title="Imprimir"
     >
         <i class="fa-solid fa-print w-5 h-5 flex items-center justify-center"
         ></i>
-    </a>
+    </button>
 
     {
         canEditSong && (
@@ -91,4 +101,14 @@ const canEditSong = hasPermission(user, "song.edit");
 
     btnUp?.addEventListener("click", () => dispatchTranspose(1));
     btnDown?.addEventListener("click", () => dispatchTranspose(-1));
+
+    const btnToggleChords = document.getElementById("btn-toggle-chords");
+    btnToggleChords?.addEventListener("click", () => {
+        window.dispatchEvent(new CustomEvent("song-toggle-chords"));
+    });
+
+    const btnPrint = document.getElementById("btn-print");
+    btnPrint?.addEventListener("click", () => {
+        window.print();
+    });
 </script>

@@ -2,7 +2,7 @@ import React from 'react';
 
 const commonChords = ['C', 'D', 'E', 'F', 'G', 'A', 'B', 'Cm', 'Dm', 'Em', 'Am', 'Bm'];
 
-export default function ChordToolbar({ onTranspose, onInsertChord }) {
+export default function ChordToolbar({ onTranspose, onInsertChord, onInsertSection }) {
     return (
         <div className="flex flex-wrap gap-2 p-2 bg-white/5 rounded-lg border border-white/10 items-center">
             <div className="flex gap-1 mr-4 border-r border-white/10 pr-4">
@@ -21,6 +21,25 @@ export default function ChordToolbar({ onTranspose, onInsertChord }) {
                     title="Subir medio tono"
                 >
                     + ½ Tono
+                </button>
+            </div>
+
+            <div className="flex gap-1 mr-4 border-r border-white/10 pr-4">
+                <button
+                    type="button"
+                    onClick={() => onInsertSection && onInsertSection('Estrofa')}
+                    className="px-3 py-1 text-sm font-bold text-white bg-blue-500/80 hover:bg-blue-600 rounded transition-colors"
+                    title="Insertar Estrofa"
+                >
+                    Estrofa
+                </button>
+                <button
+                    type="button"
+                    onClick={() => onInsertSection && onInsertSection('Coro')}
+                    className="px-3 py-1 text-sm font-bold text-white bg-purple-500/80 hover:bg-purple-600 rounded transition-colors"
+                    title="Insertar Coro"
+                >
+                    Coro
                 </button>
             </div>
 

@@ -11,6 +11,7 @@ export default function SongView({ initialContent, initialKey = 'C', originalKey
         return initialContent;
     });
     const [currentKey, setCurrentKey] = useState(initialKey || originalKey);
+    const [showChords, setShowChords] = useState(true);
 
     useEffect(() => {
 
@@ -46,14 +47,23 @@ export default function SongView({ initialContent, initialKey = 'C', originalKey
             });
         };
 
+        const handleToggleChordsEvent = () => {
+            setShowChords(prev => !prev);
+        };
+
         window.addEventListener('song-transpose', handleTransposeEvent);
-        return () => window.removeEventListener('song-transpose', handleTransposeEvent);
+        window.addEventListener('song-toggle-chords', handleToggleChordsEvent);
+
+        return () => {
+            window.removeEventListener('song-transpose', handleTransposeEvent);
+            window.removeEventListener('song-toggle-chords', handleToggleChordsEvent);
+        }
     }, []);
 
     return (
         <div className="pb-20">
             {content.split('\n').map((line, i) => (
-                <SongLine key={i} line={line} />
+                <SongLine key={i} line={line} showChords={showChords} />
             ))}
         </div>
     );

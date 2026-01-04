@@ -34,11 +34,28 @@ const displayTone = toneParam || song?.key;
 ---
 
 <Layout title={`${song?.title} - ${song?.artist}`}>
-    <div class="flex flex-col h-full bg-bg-main text-text-main">
-        <div class="flex flex-1 max-w-[1400px] mx-auto w-full">
+    <div
+        class="print-header flex items-center gap-4 mb-2 pb-2 border-b border-gray-300"
+    >
+        <img src="/icono.svg" alt="Cancionero Digital" class="w-10 h-10" />
+        <div class="flex-1">
+            <h1 class="text-3xl font-bold text-black leading-tight">
+                {song?.title}
+            </h1>
+            <p class="text-gray-600 text-sm">{song?.artist}</p>
+        </div>
+        <div class="text-right">
+            <p class="text-gray-400 text-xs">Cancionero Digital</p>
+        </div>
+    </div>
+
+    <div
+        class="flex flex-col h-full bg-bg-main text-text-main print:bg-white print:text-black"
+    >
+        <div class="flex flex-1 max-w-[1400px] mx-auto w-full print:block">
             <SongTools id={id} />
 
-            <main class="flex-1 p-6 md:p-10 min-w-0">
+            <main class="flex-1 p-6 md:p-10 min-w-0 print:px-8 print:py-0">
                 <HeaderLyric
                     title={song?.title}
                     artist={song?.artist}
@@ -46,8 +63,10 @@ const displayTone = toneParam || song?.key;
                     category={song?.category?.name}
                 />
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-2">
+                <div
+                    class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start print:block"
+                >
+                    <div class="lg:col-span-2 print:w-full">
                         <SongView
                             client:load
                             initialContent={song?.content}
@@ -55,7 +74,7 @@ const displayTone = toneParam || song?.key;
                             originalKey={song?.key}
                         />
                     </div>
-                    <div class="lg:col-span-1">
+                    <div class="lg:col-span-1 no-print">
                         <YouTubePlayer url={song?.url_song} />
                     </div>
                 </div>
