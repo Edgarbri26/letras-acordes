@@ -6,7 +6,6 @@ import { getMisas } from "../../services/misas";
 import { getMoments } from "@/services/moments";
 import MisaSongManager from "@/components/MisaSongManager";
 import type { Moment } from "@/types/misa";
-import "../../scripts/misa-details";
 import { API_URL } from "@/services/songs";
 
 const { id } = Astro.params;
@@ -329,6 +328,10 @@ const formatDate = (dateString: string) => {
         }
     </main>
 </Layout>
+
+<script>
+    import "../../scripts/misa-details";
+</script>
 
 <!-- <script></script> -->
 

@@ -29,7 +29,6 @@ export const createMisa = async (title: string, dateMisa: string, visibility: st
         const res = await fetch(`${API_URL}/misas`, {
             method: "POST",
             headers,
-            credentials: "include",
             body: JSON.stringify({ title, dateMisa, visibility }),
         });
 
@@ -121,7 +120,6 @@ export const removeSongFromMisa = async (misaId: number, misaSongId: number, tok
         const res = await fetch(url, {
             method: "DELETE",
             headers,
-            credentials: "include",
         });
 
         if (!res.ok) {
