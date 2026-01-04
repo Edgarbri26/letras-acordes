@@ -31,9 +31,33 @@ try {
 }
 const toneParam = Astro.url.searchParams.get("tone");
 const displayTone = toneParam || song?.key;
+
+const seoTitle = `${song?.title} - ${song?.artist} | Letra y Acordes`;
+const seoDescription = `Letra, acordes y música de ${song?.title} por ${song?.artist}. Aprende a tocar esta canción con nuestras tablaturas y herramientas de transposición.`;
+
+const schema = {
+    "@context": "https://schema.org",
+    "@type": "MusicComposition",
+    name: song?.title,
+    composer: {
+        "@type": "Person",
+        name: song?.artist,
+    },
+    lyricist: {
+        "@type": "Person",
+        name: song?.artist,
+    },
+    inLanguage: "es",
+    category: song?.category?.name,
+};
 ---
 
-<Layout title={`${song?.title} - ${song?.artist}`}>
+<Layout title={seoTitle} description={seoDescription}>
+    <script
+        type="application/ld+json"
+        slot="head"
+        set:html={JSON.stringify(schema)}
+    />
     <div
         class="print-header flex items-center gap-4 mb-2 pb-2 border-b border-gray-300"
     >
