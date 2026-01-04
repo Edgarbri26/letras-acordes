@@ -19,7 +19,7 @@ const SongLine = ({ line, showChords = true }) => {
     const segments = line.split(/(\[.*?\])/);
 
     return (
-        <div className={`relative font-mono text-lg whitespace-pre-wrap ${showChords ? 'leading-[3.5rem]' : 'leading-relaxed'}`}>
+        <div className={`relative text-lg whitespace-pre-wrap ${showChords ? 'leading-[3.5rem]' : 'leading-relaxed'}`}>
             {segments.map((seg, i) => {
                 const match = seg.match(/^\[(.*?)\]$/);
                 if (match) {
@@ -27,7 +27,7 @@ const SongLine = ({ line, showChords = true }) => {
 
                     return (
                         <span key={i} className="inline-block relative w-0 overflow-visible align-baseline">
-                            <span className="absolute bottom-[1.2em] left-0 text-accent-main font-bold text-sm select-none whitespace-nowrap">
+                            <span className="absolute bottom-[1.2em] left-0 text-accent-main font-mono font-bold text-sm select-none whitespace-nowrap">
                                 {match[1]}
                             </span>
                         </span>

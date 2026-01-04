@@ -9,6 +9,9 @@
 
     --color-text-main: #F2F0E6;
     --color-text-secondary: #9E9E9E;
+
+    --font-sans: "Outfit", sans-serif;
+    --font-mono: "JetBrains Mono", monospace;
 }
 
 @media print {
