@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     buttons.forEach((btn) => {
         btn.addEventListener("click", () => {
             const momentId = btn.getAttribute("data-moment-id");
-            if ((window as any).openAddSongModal) {
+            if ((window as any).openAddSongModal && momentId) {
                 (window as any).openAddSongModal(momentId);
             } else {
                 showError(

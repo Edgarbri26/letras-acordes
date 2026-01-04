@@ -129,7 +129,7 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
         };
     }, []);
 
-    const selectedMoment = moments.find(m => m.id.toString() === selectedMomentId.toString());
+    const selectedMoment = selectedMomentId ? moments.find(m => m.id.toString() === selectedMomentId.toString()) : null;
 
     return (
         <>
