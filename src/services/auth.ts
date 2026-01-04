@@ -1,5 +1,7 @@
+import { API_URL } from "./songs";
+
 export const register = async (name: string, email: string, password: string) => {
-    const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
+
 
     const response = await fetch(`${API_URL}/auth/register`, {
         method: "POST",
@@ -14,7 +16,7 @@ export const register = async (name: string, email: string, password: string) =>
 
 export const login = async (email: FormDataEntryValue | null, password: FormDataEntryValue | null) => {
 
-    const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
+
     if (!email || !password) {
         console.error("Email and Password are required");
         return null;

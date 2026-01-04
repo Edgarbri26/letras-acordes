@@ -5,6 +5,8 @@ import GirdSongs from "@/components/GirdSongs.astro";
 import { getUserFromToken } from "@/utils/auth";
 import type { Song } from "../../types/song";
 import type { Category } from "../../types/category";
+import { API_URL } from "@/services/songs";
+
 const { search } = Astro.params;
 
 let songs: Song[] = [];
@@ -24,9 +26,6 @@ try {
     // Get category filter if present
     const categoryId = Astro.url.searchParams.get("categoryId") || "";
     const activeParam = Astro.url.searchParams.get("active");
-
-    const API_URL =
-        import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
     // Fetch songs
     // Fetch songs

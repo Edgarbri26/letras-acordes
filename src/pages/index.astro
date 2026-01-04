@@ -6,19 +6,25 @@ import "../styles/global.css";
 import type { Song } from "@/types/song";
 import type { Category } from "@/types/category";
 import { getUserFromToken } from "@/utils/auth";
+import { API_URL } from "@/services/songs";
 import GirdSongs from "@/components/GirdSongs.astro";
 
 let songs: Song[] = [];
 let categories: Category[] = [];
-let stats = { totalSongs: 0, totalCategories: 0 };
+interface Stats {
+	totalSongs: number;
+	totalCategories: number;
+	activeSongs?: number;
+}
+let stats: Stats = { totalSongs: 0, totalCategories: 0, activeSongs: 0 };
 let error = null;
-
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 const token = Astro.cookies.get("token")?.value;
 const headers: Record<string, string> = token
 	? { Authorization: `Bearer ${token}` }
 	: {};
+
+const user = getUserFromToken(token);
 
 try {
 	// Fetch latest 10 songs
@@ -31,7 +37,6 @@ try {
 	const catRes = await fetch(`${API_URL}/categories`, { headers });
 	if (catRes.ok) {
 		categories = await catRes.json();
-		const user = getUserFromToken(token);
 		if (user?.role === "ADMIN") {
 			categories.push({ id: -1, name: "Inactivas" } as any);
 		}
@@ -67,10 +72,18 @@ try {
 						<h2
 							class="text-lg font-medium text-text-secondary mb-2"
 						>
-							Total de Canciones
+							{
+								user?.role === "ADMIN"
+									? "Total de Canciones"
+									: "Canciones Disponibles"
+							}
 						</h2>
 						<p class="text-4xl font-bold text-accent-main">
-							{stats.totalSongs}
+							{
+								user?.role === "ADMIN"
+									? stats.totalSongs
+									: (stats.activeSongs ?? stats.totalSongs)
+							}
 						</p>
 					</div>
 					<div

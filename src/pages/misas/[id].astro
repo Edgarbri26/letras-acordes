@@ -7,9 +7,9 @@ import { getMoments } from "@/services/moments";
 import MisaSongManager from "@/components/MisaSongManager";
 import type { Moment } from "@/types/misa";
 import "../../scripts/misa-details";
+import { API_URL } from "@/services/songs";
 
 const { id } = Astro.params;
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 let misa = null;
 let error = null;

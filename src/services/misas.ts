@@ -15,7 +15,7 @@ export const getMisas = async (token?: string): Promise<ServiceResponse<Misa[]>>
         return { success: true, data };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -42,7 +42,7 @@ export const createMisa = async (title: string, dateMisa: string, visibility: st
         return { success: true, data };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -71,7 +71,7 @@ export const updateMisa = async (id: number, title: string, dateMisa: string, vi
         return { success: true, data };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -102,7 +102,7 @@ export const addSongToMisa = async (misaId: number, songId: number, momentId: nu
         return { success: true, data };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -131,7 +131,7 @@ export const removeSongFromMisa = async (misaId: number, misaSongId: number, tok
         return { success: true };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -155,7 +155,7 @@ export const deleteMisa = async (id: number, token: string | undefined): Promise
         return { success: true };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
 
@@ -186,6 +186,6 @@ export const updateMisaSong = async (misaId: number, misaSongId: number, key: st
         return { success: true, data };
     } catch (e) {
         console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión." };
+        return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };

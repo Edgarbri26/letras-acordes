@@ -1,6 +1,6 @@
 import type { Song } from "../types/song";
 
-export const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
+export const API_URL = import.meta.env.PUBLIC_API_URL || (typeof window !== "undefined" ? "/api" : "http://localhost:4321/api");
 
 export interface ServiceResponse<T = any> {
     success: boolean;

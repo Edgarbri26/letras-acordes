@@ -4,9 +4,9 @@ import type { Misa, Moment } from "../../../types/misa";
 import { getMoments } from "../../../services/moments";
 import SongView from "../../../components/SongView.jsx";
 import HeaderLyric from "../../../components/HeaderLyric.astro";
+import { API_URL } from "@/services/songs";
 
 const { id } = Astro.params;
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 let misa: Misa | null = null;
 let error = null;

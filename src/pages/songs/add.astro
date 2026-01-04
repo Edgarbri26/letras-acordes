@@ -6,10 +6,8 @@ import ChordEditor from "@/components/ChordEditor.jsx";
 import { supabase } from "@/lib/supabase";
 import "@/styles/global.css";
 import type { Category } from "@/types/category";
-import { createSong } from "@/services/songs";
+import { createSong, API_URL } from "@/services/songs";
 import { getUserFromToken, hasPermission } from "@/utils/auth";
-
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 const token = Astro.cookies.get("token")?.value;
 const user = getUserFromToken(token);

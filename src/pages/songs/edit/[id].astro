@@ -13,6 +13,7 @@ import {
     showConfirm,
     showLoading,
 } from "@/utils/alerts";
+import { API_URL } from "@/services/songs";
 
 const token = Astro.cookies.get("token")?.value;
 const user = getUserFromToken(token);
@@ -26,7 +27,6 @@ if (!hasPermission(user, "song.edit")) {
 }
 
 const { id } = Astro.params;
-const API_URL = import.meta.env.PUBLIC_API_URL || "http://localhost:3000/api";
 
 let song = null;
 let categories: Category[] = [];
