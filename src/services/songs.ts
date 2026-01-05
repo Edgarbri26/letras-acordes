@@ -99,26 +99,4 @@ export const searchSongs = async (query: string, categoryId: string = ""): Promi
         return { success: false, error: "Error de conexión." };
     }
 };
-export const deleteSong = async (id: number, token?: string): Promise<ServiceResponse> => {
-    try {
-        const headers: HeadersInit = {};
-        if (token) {
-            headers["Cookie"] = `token=${token}`;
-        }
 
-        const res = await fetch(`${API_URL}/songs/${id}`, {
-            method: "DELETE",
-            headers,
-        });
-
-        if (!res.ok) {
-            const errData = await res.json();
-            return { success: false, error: "Error al eliminar la canción.", data: errData };
-        }
-
-        return { success: true };
-    } catch (e) {
-        console.error("Service exception:", e);
-        return { success: false, error: "Error de conexión con el servidor." };
-    }
-};

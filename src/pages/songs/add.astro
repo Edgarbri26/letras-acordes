@@ -238,115 +238,155 @@ if (Astro.request.method === "POST") {
         </form>
     </dialog>
 
-    <script define:vars={{ API_URL, errorMessage }}>
+    <div
+        id="add-song-data"
+        data-api-url={API_URL}
+        data-error-message={errorMessage}
+        class="hidden"
+    >
+    </div>
+
+    <script lang="ts">
         import { showError, showSuccessToast } from "@/utils/alerts";
 
-        if (errorMessage) {
-            showError("Error", errorMessage);
-        }
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataElement = document.getElementById("add-song-data");
+            const API_URL = dataElement?.dataset.apiUrl;
+            const errorMessage = dataElement?.dataset.errorMessage;
 
-        // --- Category Logic ---
-        const btnNewCategory = document.getElementById("btn-new-category");
-        const modalCategory = document.getElementById("modal-category");
-        const btnSaveCategory = document.getElementById("btn-save-category");
-        const inputCatName = document.getElementById("new-cat-name");
-        const selectCategory = document.getElementById("categoryId");
-        const closeCategoryBtn = document.querySelector(
-            "#modal-category button[value='cancel']",
-        );
-
-        if (btnNewCategory && modalCategory) {
-            btnNewCategory.addEventListener("click", () => {
-                modalCategory.showModal();
-                if (inputCatName) {
-                    inputCatName.value = "";
-                    inputCatName.focus();
-                }
-            });
-        }
-
-        if (closeCategoryBtn && modalCategory) {
-            closeCategoryBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                modalCategory.close();
-            });
-        }
-
-        if (btnSaveCategory) {
-            btnSaveCategory.addEventListener("click", async () => {
-                const name = inputCatName?.value.trim();
-                if (!name) return;
-
-                try {
-                    btnSaveCategory.disabled = true;
-                    btnSaveCategory.textContent = "Guardando...";
-
-                    const res = await fetch(`${API_URL}/categories`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ name }),
-                    });
-
-                    if (res.ok) {
-                        const newCat = await res.json();
-                        // Agregar al select
-                        const option = document.createElement("option");
-                        option.value = newCat.id;
-                        option.textContent = newCat.name;
-                        option.selected = true; // Seleccionar automáticamente
-                        selectCategory?.appendChild(option);
-
-                        modalCategory?.close();
-
-                        showSuccessToast("¡Categoría creada!");
-                    } else {
-                        const err = await res.json();
-                        showError("Error", "Error al crear la categoría");
-                        console.error(err);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    showError("Error", "Error de conexión");
-                } finally {
-                    btnSaveCategory.disabled = false;
-                    btnSaveCategory.textContent = "Guardar";
-                }
-            });
-        }
-
-        // --- Main Form Logic ---
-        const mainForm = document.querySelector("main form");
-        const mainSubmitBtn = mainForm?.querySelector("button[type='submit']");
-
-        if (mainForm) {
-            mainForm.addEventListener("submit", () => {
-                if (mainSubmitBtn) {
-                    mainSubmitBtn.setAttribute("disabled", "true");
-                    mainSubmitBtn.innerHTML = "Guardando...";
-                    mainSubmitBtn.classList.add(
-                        "opacity-75",
-                        "cursor-not-allowed",
-                    );
-                }
-            });
-        }
-
-        // --- Key Logic ---
-        const keySelect = document.getElementById("key");
-
-        keySelect?.addEventListener("change", (e) => {
-            const newKey = e.target.value;
-            const event = new CustomEvent("song-key-change", {
-                detail: { key: newKey },
-            });
-            window.dispatchEvent(event);
-        });
-
-        // Escuchar cambios desde el editor de acordes
-        window.addEventListener("editor-key-change", (e) => {
-            if (keySelect && e.detail && e.detail.key) {
-                keySelect.value = e.detail.key;
+            if (errorMessage) {
+                showError("Error", errorMessage);
             }
+
+            // --- Category Logic ---
+            console.log("Initializing script...");
+
+            const btnNewCategory =
+                document.querySelector<HTMLButtonElement>("#btn-new-category");
+            const modalCategory =
+                document.querySelector<HTMLDialogElement>("#modal-category");
+            const btnSaveCategory =
+                document.querySelector<HTMLButtonElement>("#btn-save-category");
+            const inputCatName =
+                document.querySelector<HTMLInputElement>("#new-cat-name");
+            const selectCategory =
+                document.querySelector<HTMLSelectElement>("#categoryId");
+            const closeCategoryBtn = document.querySelector(
+                "#modal-category button[value='cancel']",
+            );
+
+            console.log("btnNewCategory:", btnNewCategory);
+            console.log("modalCategory:", modalCategory);
+
+            if (btnNewCategory && modalCategory) {
+                console.log("Adding click listener to btnNewCategory");
+                btnNewCategory.addEventListener("click", (e) => {
+                    console.log("btnNewCategory clicked");
+                    e.preventDefault();
+                    modalCategory.showModal();
+                    if (inputCatName) {
+                        inputCatName.value = "";
+                        inputCatName.focus();
+                    }
+                });
+            } else {
+                console.error("Elements not found:", {
+                    btnNewCategory,
+                    modalCategory,
+                });
+            }
+
+            if (closeCategoryBtn && modalCategory) {
+                closeCategoryBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    modalCategory.close();
+                });
+            }
+
+            if (btnSaveCategory) {
+                btnSaveCategory.addEventListener("click", async () => {
+                    const name = inputCatName?.value.trim();
+                    if (!name) return;
+
+                    try {
+                        btnSaveCategory.disabled = true;
+                        btnSaveCategory.textContent = "Guardando...";
+
+                        if (!API_URL) throw new Error("API URL not found");
+
+                        const res = await fetch(`${API_URL}/categories`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ name }),
+                        });
+
+                        if (res.ok) {
+                            const newCat = await res.json();
+                            // Agregar al select
+                            const option = document.createElement("option");
+                            option.value = newCat.id;
+                            option.textContent = newCat.name;
+                            option.selected = true; // Seleccionar automáticamente
+                            selectCategory?.appendChild(option);
+
+                            modalCategory?.close();
+
+                            showSuccessToast("¡Categoría creada!");
+                        } else {
+                            const err = await res.json();
+                            showError("Error", "Error al crear la categoría");
+                            console.error(err);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        showError("Error", "Error de conexión");
+                    } finally {
+                        btnSaveCategory.disabled = false;
+                        btnSaveCategory.textContent = "Guardar";
+                    }
+                });
+            }
+
+            // --- Main Form Logic ---
+            const mainForm = document.querySelector("main form");
+            const mainSubmitBtn = mainForm?.querySelector(
+                "button[type='submit']",
+            );
+
+            if (mainForm) {
+                mainForm.addEventListener("submit", () => {
+                    if (mainSubmitBtn) {
+                        mainSubmitBtn.setAttribute("disabled", "true");
+                        mainSubmitBtn.innerHTML = "Guardando...";
+                        mainSubmitBtn.classList.add(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+                    }
+                });
+            }
+
+            // --- Key Logic ---
+            const keySelect = document.querySelector<HTMLSelectElement>("#key");
+
+            keySelect?.addEventListener("change", (e) => {
+                if (e.target instanceof HTMLSelectElement) {
+                    const newKey = e.target.value;
+                    const event = new CustomEvent("song-key-change", {
+                        detail: { key: newKey },
+                    });
+                    window.dispatchEvent(event);
+                }
+            });
+
+            // Escuchar cambios desde el editor de acordes
+            window.addEventListener("editor-key-change", (e) => {
+                if (e instanceof CustomEvent) {
+                    if (keySelect && e.detail && e.detail.key) {
+                        keySelect.value = e.detail.key;
+                    }
+                }
+            });
         });
     </script>
 </Layout>

@@ -1,8 +1,58 @@
 import { defineAction, ActionError } from "astro:actions";
 import { z } from "astro:schema";
 import { login, register } from "../services/auth";
+import { supabase } from "@/lib/supabase";
 
 export const server = {
+    deleteSong: defineAction({
+        accept: "json",
+        input: z.object({
+            id: z.number(),
+        }),
+        handler: async ({ id }, context) => {
+            const token = context.cookies.get("token")?.value;
+
+            if (!token) {
+                throw new ActionError({
+                    code: "UNAUTHORIZED",
+                    message: "No autorizado",
+                });
+            }
+
+            const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+            if (authError || !user) {
+                throw new ActionError({
+                    code: "UNAUTHORIZED",
+                    message: "Sesión inválida",
+                });
+            }
+
+            try {
+                const { error } = await supabase
+                    .from("songs")
+                    .delete()
+                    .eq("id", id);
+
+                if (error) {
+                    console.error("Supabase delete error:", error);
+                    throw new ActionError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "Error al eliminar en base de datos",
+                    });
+                }
+
+                return { success: true };
+            } catch (e) {
+                if (e instanceof ActionError) throw e;
+                console.error("Exception deleting song:", e);
+                throw new ActionError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Error interno del servidor",
+                });
+            }
+        },
+    }),
     register: defineAction({
         accept: "json",
         input: z.object({

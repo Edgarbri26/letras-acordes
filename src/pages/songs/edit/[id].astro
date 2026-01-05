@@ -5,7 +5,7 @@ import type { Category } from "@/types/category";
 import ChordEditor from "@/components/ChordEditor.jsx";
 import KeySelector from "@/components/KeySelector.astro";
 import "@/styles/global.css";
-import { updateSong, deleteSong } from "@/services/songs";
+import { updateSong } from "@/services/songs";
 import { getUserFromToken, hasPermission } from "@/utils/auth";
 import {
     showError,
@@ -242,7 +242,7 @@ if (Astro.request.method === "POST") {
 </Layout>
 
 <script>
-    import { deleteSong } from "@/services/songs";
+    import { actions } from "astro:actions";
     import {
         showConfirm,
         showLoading,
@@ -288,15 +288,11 @@ if (Astro.request.method === "POST") {
             if (confirmed.isConfirmed) {
                 showLoading("Eliminando...");
                 try {
-                    const token = document
-                        .querySelector("main")
-                        ?.getAttribute("data-token");
+                    const { data, error } = await actions.deleteSong({
+                        id: parseInt(songId),
+                    });
 
-                    const res = await deleteSong(
-                        parseInt(songId),
-                        token || undefined,
-                    );
-                    if (res.success) {
+                    if (!error) {
                         await showSuccessToast(
                             "Canción eliminada",
                             undefined,
@@ -304,7 +300,10 @@ if (Astro.request.method === "POST") {
                         );
                         window.location.href = "/";
                     } else {
-                        showError("Error", res.error || "Error al eliminar");
+                        showError(
+                            "Error",
+                            error.message || "Error al eliminar",
+                        );
                     }
                 } catch (e) {
                     showError("Error", "Error de conexión");
