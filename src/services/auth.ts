@@ -1,6 +1,6 @@
 import { API_URL } from "./songs";
 
-export const register = async (name: string, email: string, password: string) => {
+export const register = async (name: string, email: string, password: string, phoneNumber?: string) => {
 
 
     const response = await fetch(`${API_URL}/auth/register`, {
@@ -8,7 +8,7 @@ export const register = async (name: string, email: string, password: string) =>
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phoneNumber }),
     });
 
     return response;

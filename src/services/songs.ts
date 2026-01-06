@@ -100,3 +100,26 @@ export const searchSongs = async (query: string, categoryId: string = ""): Promi
     }
 };
 
+export const deleteSongById = async (id: number | string, token: string | undefined): Promise<ServiceResponse> => {
+    try {
+        const headers: HeadersInit = {};
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`${API_URL}/songs/${id}`, {
+            method: "DELETE",
+            headers,
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            return { success: false, error: errData.error || "Error al eliminar la canción." };
+        }
+
+        return { success: true };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión con el servidor." };
+    }
+};

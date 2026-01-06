@@ -242,7 +242,7 @@ if (Astro.request.method === "POST") {
 </Layout>
 
 <script>
-    import { actions } from "astro:actions";
+    import { deleteSongById } from "@/services/songs";
     import {
         showConfirm,
         showLoading,
@@ -274,6 +274,9 @@ if (Astro.request.method === "POST") {
 
     // Delete Logic
     const deleteBtn = document.getElementById("deleteSongBtn");
+    const mainElement = document.querySelector("main");
+    const token = mainElement?.dataset.token;
+
     if (deleteBtn) {
         deleteBtn.addEventListener("click", async () => {
             const songId = deleteBtn.getAttribute("data-song-id");
@@ -288,11 +291,9 @@ if (Astro.request.method === "POST") {
             if (confirmed.isConfirmed) {
                 showLoading("Eliminando...");
                 try {
-                    const { data, error } = await actions.deleteSong({
-                        id: parseInt(songId),
-                    });
+                    const result = await deleteSongById(songId, token);
 
-                    if (!error) {
+                    if (result.success) {
                         await showSuccessToast(
                             "Canción eliminada",
                             undefined,
@@ -300,10 +301,7 @@ if (Astro.request.method === "POST") {
                         );
                         window.location.href = "/";
                     } else {
-                        showError(
-                            "Error",
-                            error.message || "Error al eliminar",
-                        );
+                        showError("Error", result.error || "Error al eliminar");
                     }
                 } catch (e) {
                     showError("Error", "Error de conexión");

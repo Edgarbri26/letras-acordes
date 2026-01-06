@@ -66,6 +66,7 @@ try {
                     <th class="px-6 py-4 font-semibold">ID</th>
                     <th class="px-6 py-4 font-semibold">Nombre</th>
                     <th class="px-6 py-4 font-semibold">Email</th>
+                    <th class="px-6 py-4 font-semibold">Teléfono</th>
                     <th class="px-6 py-4 font-semibold">Rol</th>
                     <th class="px-6 py-4 font-semibold text-right">Acciones</th>
                 </tr>
@@ -78,6 +79,31 @@ try {
                             <td class="px-6 py-4 font-medium">{user.name}</td>
                             <td class="px-6 py-4 text-gray-500">
                                 {user.email}
+                            </td>
+                            <td class="px-6 py-4 text-gray-500">
+                                <div class="flex items-center gap-2">
+                                    <span>{user.phoneNumber || "-"}</span>
+                                    {user.phoneNumber && (
+                                        <a
+                                            href={`https://wa.me/${user.phoneNumber.replace(/[^0-9]/g, "")}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="text-green-500 hover:text-green-600 transition-colors"
+                                            title="Enviar WhatsApp"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 24 24"
+                                                fill="currentColor"
+                                            >
+                                                <path d="M.057 24l1.687-6.163c-3.104-5.385-1.748-12.083 3.328-15.688 5.6-3.951 13.56-2.296 17.283 3.595 3.725 5.892 1.638 13.684-4.502 16.585-2.228 1.054-4.735 1.157-7.032.221L.06 23.999l.053.001zm3.626-4.997l.117.189c2.316 3.754 7.235 4.908 10.993 2.578 3.756-2.332 4.939-7.279 2.645-11.028-2.302-3.763-7.253-4.921-11.009-2.576-3.756 2.345-4.923 7.301-2.617 11.057l.169.271-1.076 3.929 3.929-1.077-.151-.343z" />
+                                                <path d="M16.649 14.167c-.201-.102-1.196-.596-1.381-.664-.185-.069-.32-.102-.456.102-.136.205-.529.664-.648.802-.119.136-.238.154-.441.051-.202-.102-.857-.319-1.632-1.015-.607-.544-1.016-1.217-1.135-1.423-.119-.204-.012-.315.089-.415.092-.09.204-.238.306-.358.102-.119.136-.204.204-.34.068-.137.034-.256-.017-.358-.051-.102-.457-1.106-.628-1.516-.164-.393-.33-.339-.456-.346-.118-.007-.254-.008-.39-.008-.136 0-.357.051-.543.256-.187.204-.714.698-.714 1.703 0 1.006.732 1.977.834 2.115.102.136 1.442 2.222 3.493 3.109 2.051.887 2.051.591 2.424.555.373-.036 1.195-.494 1.365-.969.17-.477.17-.887.119-.972-.051-.086-.186-.137-.388-.238z" />
+                                            </svg>
+                                        </a>
+                                    )}
+                                </div>
                             </td>
                             <td class="px-6 py-4">
                                 <span
@@ -154,6 +180,17 @@ try {
                         name="email"
                         required
                         class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-accent-main"
+                    />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1"
+                        >Teléfono</label
+                    >
+                    <input
+                        type="tel"
+                        name="phoneNumber"
+                        class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-accent-main"
+                        placeholder="+54 9 11 1234 5678"
                     />
                 </div>
                 <div>
@@ -246,6 +283,11 @@ try {
             (
                 document.querySelector('[name="email"]') as HTMLInputElement
             ).value = userData.email;
+            (
+                document.querySelector(
+                    '[name="phoneNumber"]',
+                ) as HTMLInputElement
+            ).value = userData.phoneNumber || "";
             (
                 document.querySelector('[name="roleId"]') as HTMLSelectElement
             ).value = String(userData.roleId);

@@ -59,10 +59,11 @@ export const server = {
             email: z.string().email(),
             password: z.string().min(6),
             name: z.string().min(2),
+            phoneNumber: z.string().optional(),
         }),
-        handler: async ({ email, password, name }) => {
+        handler: async ({ email, password, name, phoneNumber }) => {
             try {
-                const response = await register(name, email, password);
+                const response = await register(name, email, password, phoneNumber);
 
                 if (!response?.ok) {
                     let message = "Error al registrar usuario";

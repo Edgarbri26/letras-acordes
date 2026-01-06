@@ -47,6 +47,21 @@ import "../styles/global.css";
 
                 <div>
                     <label
+                        for="phoneNumber"
+                        class="block text-sm font-medium text-text-secondary mb-2"
+                        >Teléfono</label
+                    >
+                    <input
+                        type="tel"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        class="w-full bg-bg-main border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-main transition-colors"
+                        placeholder="+54 9 11 1234 5678"
+                    />
+                </div>
+
+                <div>
+                    <label
                         for="password"
                         class="block text-sm font-medium text-text-secondary mb-2"
                         >Contraseña</label
@@ -109,11 +124,13 @@ import "../styles/global.css";
                 const name = formData.get("name") as string;
                 const email = formData.get("email") as string;
                 const password = formData.get("password") as string;
+                const phoneNumber = formData.get("phoneNumber") as string;
 
                 const { data, error } = await actions.register({
                     name,
                     email,
                     password,
+                    phoneNumber,
                 });
 
                 if (!error && data?.success) {
