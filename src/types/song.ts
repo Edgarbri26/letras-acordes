@@ -10,5 +10,8 @@ export type Song = {
     categoryId: number;
     category: Category | null;
     active: boolean;
+    user?: {
+        name: string;
+    } | null;
 }
 

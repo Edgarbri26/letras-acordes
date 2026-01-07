@@ -6,6 +6,7 @@ const {
     tone = "C",
     category,
     url_song = "",
+    user,
 } = Astro.props;
 ---
 
@@ -19,7 +20,7 @@ const {
         <span
             class="bg-bg-secondary px-3 py-1 rounded-full border border-white/10"
         >
-            Tom: <span id="header-tone" class="text-accent-main font-bold"
+            Ton: <span id="header-tone" class="text-accent-main font-bold"
                 >{tone}</span
             >
         </span>
@@ -30,11 +31,13 @@ const {
                 {category?.name}
             </span>
         </a>
-        <!-- <span
-            class="cursor-pointer hover:underline bg-bg-secondary px-3 py-1 rounded-full border border-white/10 text-text-main"
-        >
-            <a href={url_song} target="_blank">Escuchar Canción</a>
-        </span> -->
+        {
+            user && (
+                <span class="text-xs text-text-secondary/80 ml-auto">
+                    Creado por: {user.name}
+                </span>
+            )
+        }
     </div>
 </header>
 
