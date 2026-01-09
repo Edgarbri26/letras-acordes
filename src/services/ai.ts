@@ -23,13 +23,12 @@ export interface ChordProResponse {
 }
 
 /**
- * Parámetros para generar canción completa
+ * Parámetros para buscar canción por fragmento de letra
  */
-export interface GenerateFullSongParams {
-    title: string;
-    tone: string;
-    category?: string;
+export interface SearchSongParams {
+    lyricFragment: string;
     artist?: string;
+    title?: string;
 }
 
 /**
@@ -42,16 +41,24 @@ export interface AutocompleteParams {
 }
 
 /**
- * Genera una canción completa con letra y acordes usando IA
- * @param params - Parámetros de generación (título, tono, categoría)
+ * Busca una canción original con letra y acordes usando un fragmento de letra como pista
+ * @param params - Parámetros de búsqueda (fragmento de letra, artista opcional, título opcional)
  * @param token - Token de autenticación opcional
- * @returns Respuesta con la canción en formato ChordPro
+ * @returns Respuesta con la canción original encontrada en formato ChordPro
  */
-export const generateFullSong = async (
-    params: GenerateFullSongParams,
+export const searchSongByLyrics = async (
+    params: SearchSongParams,
     token?: string
 ): Promise<ServiceResponse<ChordProResponse>> => {
     try {
+        // Validación de parámetros
+        if (!params.lyricFragment || params.lyricFragment.trim().length === 0) {
+            return {
+                success: false,
+                error: "Se requiere un fragmento de letra para buscar la canción",
+            };
+        }
+
         const headers: HeadersInit = {
             "Content-Type": "application/json",
         };
@@ -60,15 +67,13 @@ export const generateFullSong = async (
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${API_URL}/generate`, {
+        const response = await fetch(`${API_URL}/search/song`, {
             method: "POST",
             headers,
             body: JSON.stringify({
-                type: "full",
-                title: params.title,
-                tone: params.tone,
-                category: params.category || "Entrada",
+                lyricFragment: params.lyricFragment,
                 artist: params.artist || "",
+                title: params.title || "",
             }),
         });
 
@@ -76,14 +81,14 @@ export const generateFullSong = async (
             const errorData = await response.json().catch(() => ({}));
             return {
                 success: false,
-                error: errorData.message || "Error al generar la canción",
+                error: errorData.message || "Error al buscar la canción",
             };
         }
 
         const data: ChordProResponse = await response.json();
         return { success: true, data };
     } catch (error) {
-        console.error("Error en generateFullSong:", error);
+        console.error("Error en searchSongByLyrics:", error);
         return {
             success: false,
             error: error instanceof Error ? error.message : "Error de conexión con el servidor",

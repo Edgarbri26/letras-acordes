@@ -192,11 +192,11 @@ if (Astro.request.method === "POST") {
                         <div class="flex flex-col sm:flex-row gap-2">
                             <button
                                 type="button"
-                                id="btn-ai-generate-full"
-                                title="Generar canción completa con IA"
+                                id="btn-ai-search-song"
+                                title="Buscar canción original por fragmento de letra"
                                 class="flex items-center gap-2 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
                             >
-                                <span>🎵</span> Generar canción completa
+                                <span>🔍</span> Buscar canción por letra
                             </button>
                             <button
                                 type="button"
@@ -513,89 +513,104 @@ if (Astro.request.method === "POST") {
                 });
             }
 
-            // --- AI Generate Full Song Logic ---
-            const btnAIFull = document.getElementById("btn-ai-generate-full");
-            console.log("Searching for AI Full Song button...", btnAIFull);
+            // --- AI Search Song by Lyrics Logic ---
+            const btnAISearch = document.getElementById("btn-ai-search-song");
+            console.log("Searching for AI Search Song button...", btnAISearch);
 
-            if (btnAIFull) {
-                btnAIFull.addEventListener("click", async () => {
-                    console.log("AI Full Song Button Clicked");
+            if (btnAISearch) {
+                btnAISearch.addEventListener("click", async () => {
+                    console.log("AI Search Song Button Clicked");
                     const titleInput = document.querySelector("#title");
                     const artistInput = document.querySelector("#artist");
-                    const keySelect = document.querySelector("#key");
-                    const categorySelect =
-                        document.querySelector("#categoryId");
+                    const contentInput =
+                        document.querySelector('[name="content"]');
 
                     const title = titleInput?.value || "";
                     const artist = artistInput?.value || "";
-                    const key = keySelect?.value || "";
-                    const categoryId = categorySelect?.value || "";
+                    const lyricFragment = contentInput?.value || "";
 
-                    if (!title || !key) {
-                        console.error("Datos incompletos");
+                    // Validar que haya al menos un fragmento de letra
+                    if (!lyricFragment || lyricFragment.trim().length === 0) {
                         alert(
-                            "Por favor agrega el Título y Tono antes de generar la canción",
+                            "Por favor escribe un fragmento de la letra de la canción que deseas buscar.\n\n" +
+                                "Ejemplo: 'Amazing grace how sweet the sound'",
                         );
                         return;
                     }
 
                     // Confirmar con el usuario
                     const artistInfo = artist ? ` de ${artist}` : "";
+                    const titleInfo = title ? ` (${title})` : "";
                     const confirmResult = confirm(
-                        `¿Deseas que la IA busque la letra ORIGINAL de "${title}"${artistInfo} y le agregue acordes?\n\nEsto reemplazará el contenido actual del editor.`,
+                        `¿Deseas buscar la canción original usando este fragmento de letra?${titleInfo}${artistInfo}\n\n` +
+                            `Fragmento: "${lyricFragment.substring(0, 100)}${lyricFragment.length > 100 ? "..." : ""}"\n\n` +
+                            `Esto reemplazará el contenido actual del editor con la canción completa encontrada.`,
                     );
 
                     if (!confirmResult) return;
 
-                    console.log("--- AI Generate Full Song Context ---");
-                    console.log("Title:", title);
-                    console.log("Artist:", artist);
-                    console.log("Key:", key);
-                    console.log("Category ID:", categoryId);
+                    console.log("--- AI Search Song Context ---");
+                    console.log("Lyric Fragment:", lyricFragment);
+                    console.log("Title (hint):", title);
+                    console.log("Artist (hint):", artist);
                     console.log("-------------------------------");
 
                     try {
                         // Deshabilitar botón y mostrar estado de carga
-                        btnAIFull.disabled = true;
-                        const originalText = btnAIFull.innerHTML;
-                        btnAIFull.innerHTML =
-                            '<span class="animate-pulse">⏳ Generando canción...</span>';
-                        btnAIFull.classList.add(
+                        btnAISearch.disabled = true;
+                        const originalText = btnAISearch.innerHTML;
+                        btnAISearch.innerHTML =
+                            '<span class="animate-pulse">⏳ Buscando canción...</span>';
+                        btnAISearch.classList.add(
                             "opacity-75",
                             "cursor-not-allowed",
                         );
 
                         // Importar dinámicamente el servicio de IA
-                        const { generateFullSong } =
+                        const { searchSongByLyrics } =
                             await import("/src/services/ai.ts");
 
-                        // Obtener el nombre de la categoría (opcional, para enviar al backend)
-                        const categoryName =
-                            categorySelect?.options[
-                                categorySelect.selectedIndex
-                            ]?.text || "Entrada";
-
-                        // Llamar al servicio para generar canción completa
-                        const result = await generateFullSong(
+                        // Llamar al servicio para buscar canción por letra
+                        const result = await searchSongByLyrics(
                             {
-                                title: title,
-                                artist: artist,
-                                tone: key,
-                                category: categoryName,
+                                lyricFragment: lyricFragment,
+                                artist: artist || undefined,
+                                title: title || undefined,
                             },
                             token,
                         );
 
                         if (!result.success) {
                             throw new Error(
-                                result.error || "Error al generar la canción",
+                                result.error || "Error al buscar la canción",
                             );
                         }
 
                         const data = result.data;
-                        console.log("AI Full Song Response:", data);
+                        console.log("AI Search Song Response:", data);
 
                         if (data && data.chordPro) {
+                            // Actualizar campos del formulario con la información encontrada
+                            if (data.metadata?.title && titleInput) {
+                                titleInput.value = data.metadata.title;
+                            }
+                            if (data.metadata?.artist && artistInput) {
+                                artistInput.value = data.metadata.artist;
+                            }
+                            if (data.metadata?.key) {
+                                const keySelect =
+                                    document.querySelector("#key");
+                                if (keySelect) {
+                                    keySelect.value = data.metadata.key;
+                                    // Disparar evento de cambio de tono
+                                    window.dispatchEvent(
+                                        new CustomEvent("song-key-change", {
+                                            detail: { key: data.metadata.key },
+                                        }),
+                                    );
+                                }
+                            }
+
                             // Disparar evento personalizado para que React actualice el editor
                             window.dispatchEvent(
                                 new CustomEvent("update-editor-content", {
@@ -603,30 +618,36 @@ if (Astro.request.method === "POST") {
                                 }),
                             );
 
-                            // Mostrar información de los acordes generados
+                            // Mostrar información de la canción encontrada
                             const chordsList =
                                 data.chords?.list?.join(", ") || "N/A";
+                            const songTitle = data.metadata?.title || "Canción";
+                            const songArtist =
+                                data.metadata?.artist || "Desconocido";
                             alert(
-                                `✅ ¡Canción generada exitosamente!\n\n` +
-                                    `Acordes encontrados: ${chordsList}\n` +
+                                `✅ ¡Canción encontrada!\n\n` +
+                                    `Título: ${songTitle}\n` +
+                                    `Artista: ${songArtist}\n` +
+                                    `Tono: ${data.metadata?.key || "N/A"}\n\n` +
+                                    `Acordes: ${chordsList}\n` +
                                     `Total: ${data.chords?.count || 0} acordes únicos`,
                             );
                         } else {
                             throw new Error("Respuesta inválida del servidor");
                         }
                     } catch (error) {
-                        console.error("Error al generar canción:", error);
+                        console.error("Error al buscar canción:", error);
                         alert(
-                            `❌ Error al generar la canción\n\n` +
+                            `❌ Error al buscar la canción\n\n` +
                                 `${error instanceof Error ? error.message : "Error desconocido"}\n\n` +
-                                `Por favor intenta nuevamente.`,
+                                `Verifica que el fragmento de letra sea correcto y vuelve a intentarlo.`,
                         );
                     } finally {
                         // Restaurar botón
-                        btnAIFull.disabled = false;
-                        btnAIFull.innerHTML =
-                            "<span>🎵</span> Generar canción completa";
-                        btnAIFull.classList.remove(
+                        btnAISearch.disabled = false;
+                        btnAISearch.innerHTML =
+                            "<span>🔍</span> Buscar canción por letra";
+                        btnAISearch.classList.remove(
                             "opacity-75",
                             "cursor-not-allowed",
                         );
