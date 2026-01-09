@@ -25,8 +25,20 @@ export default function ChordEditor({ name = "content", initialContent = "", ini
             }
         };
 
+        // Escuchar evento para actualizar contenido desde fuera (ej: AI autocomplete)
+        const handleContentUpdate = (e) => {
+            if (e.detail && e.detail.content) {
+                setContent(e.detail.content);
+            }
+        };
+
         window.addEventListener('song-key-change', handleKeyChange);
-        return () => window.removeEventListener('song-key-change', handleKeyChange);
+        window.addEventListener('update-editor-content', handleContentUpdate);
+
+        return () => {
+            window.removeEventListener('song-key-change', handleKeyChange);
+            window.removeEventListener('update-editor-content', handleContentUpdate);
+        };
     }, []); // Ya no depende de currentKey porque usamos ref
 
     const addChord = (chordName) => {

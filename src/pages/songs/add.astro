@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import "@/styles/global.css";
 import type { Category } from "@/types/category";
 import { createSong, API_URL } from "@/services/songs";
+import { autocompleteChordsWithAI } from "@/services/ai";
 import { getUserFromToken, hasPermission } from "@/utils/auth";
 
 const token = Astro.cookies.get("token")?.value;
@@ -188,14 +189,24 @@ if (Astro.request.method === "POST") {
                                 los acordes en la posición exacta.
                             </p>
                         </div>
-                        <button
-                            type="button"
-                            id="btn-ai-autocomplete"
-                            title="Completar acordes con IA"
-                            class="flex items-center gap-2 bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
-                        >
-                            <span>✨</span> Generar acordes con IA
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <button
+                                type="button"
+                                id="btn-ai-generate-full"
+                                title="Generar canción completa con IA"
+                                class="flex items-center gap-2 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
+                            >
+                                <span>🎵</span> Generar canción completa
+                            </button>
+                            <button
+                                type="button"
+                                id="btn-ai-autocomplete"
+                                title="Completar acordes con IA"
+                                class="flex items-center gap-2 bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
+                            >
+                                <span>✨</span> Generar acordes con IA
+                            </button>
+                        </div>
                     </div>
 
                     {/* AQUÍ VA LA MAGIA DE REACT */}
@@ -219,7 +230,7 @@ if (Astro.request.method === "POST") {
     {/* Modal para crear categoría */}
     <dialog
         id="modal-category"
-        class="bg-bg-secondary text-text-main border border-white/10 rounded-lg p-6 backdrop:backdrop-blur-sm shadow-xl w-full max-w-sm"
+        class="bg-bg-secondary text-text-main border border-white/10 rounded-lg p-6 backdrop:backdrop-blur-sm shadow-xl w-full max-w-sm m-auto"
     >
         <form method="dialog" class="space-y-4">
             <h3 class="text-lg font-bold">Nueva Categoría</h3>
@@ -254,6 +265,7 @@ if (Astro.request.method === "POST") {
         id="add-song-data"
         data-api-url={API_URL}
         data-error-message={errorMessage}
+        data-token={token}
         class="hidden"
     >
     </div>
@@ -267,200 +279,382 @@ if (Astro.request.method === "POST") {
 
         console.log("Script starting in add.astro");
 
-        // document.addEventListener("DOMContentLoaded", () => {
-        const dataElement = document.getElementById("add-song-data");
-        const API_URL = dataElement?.dataset.apiUrl;
-        const errorMessage = dataElement?.dataset.errorMessage;
+        document.addEventListener("DOMContentLoaded", () => {
+            const dataElement = document.getElementById("add-song-data");
+            const API_URL = dataElement?.dataset.apiUrl;
+            const errorMessage = dataElement?.dataset.errorMessage;
+            const token = dataElement?.dataset.token;
 
-        if (errorMessage) {
-            // showError("Error", errorMessage);
-            console.error("Error Message:", errorMessage);
-        }
+            if (errorMessage) {
+                console.error("Error Message:", errorMessage);
+            }
 
-        // --- Category Logic ---
-        console.log("Initializing category logic...");
+            // --- Category Logic ---
+            console.log("Initializing category logic...");
 
-        const btnNewCategory =
-            document.querySelector<HTMLButtonElement>("#btn-new-category");
-        const modalCategory =
-            document.querySelector<HTMLDialogElement>("#modal-category");
-        const btnSaveCategory =
-            document.querySelector<HTMLButtonElement>("#btn-save-category");
-        const inputCatName =
-            document.querySelector<HTMLInputElement>("#new-cat-name");
-        const selectCategory =
-            document.querySelector<HTMLSelectElement>("#categoryId");
-        const closeCategoryBtn = document.querySelector(
-            "#modal-category button[value='cancel']",
-        );
+            const btnNewCategory = document.querySelector("#btn-new-category");
+            const modalCategory = document.querySelector("#modal-category");
+            const btnSaveCategory =
+                document.querySelector("#btn-save-category");
+            const inputCatName = document.querySelector("#new-cat-name");
+            const selectCategory = document.querySelector("#categoryId");
+            const closeCategoryBtn = document.querySelector(
+                "#modal-category button[value='cancel']",
+            );
 
-        console.log("btnNewCategory:", btnNewCategory);
-        console.log("modalCategory:", modalCategory);
+            console.log("btnNewCategory:", btnNewCategory);
+            console.log("modalCategory:", modalCategory);
 
-        if (btnNewCategory && modalCategory) {
-            console.log("Adding click listener to btnNewCategory");
-            btnNewCategory.addEventListener("click", (e) => {
-                console.log("btnNewCategory clicked");
-                e.preventDefault();
-                modalCategory.showModal();
-                if (inputCatName) {
-                    inputCatName.value = "";
-                    inputCatName.focus();
-                }
-            });
-        } else {
-            console.error("Elements not found:", {
-                btnNewCategory,
-                modalCategory,
-            });
-        }
+            if (btnNewCategory && modalCategory) {
+                console.log("Adding click listener to btnNewCategory");
+                btnNewCategory.addEventListener("click", (e) => {
+                    console.log("btnNewCategory clicked");
+                    e.preventDefault();
+                    modalCategory.showModal();
+                    if (inputCatName) {
+                        inputCatName.value = "";
+                        inputCatName.focus();
+                    }
+                });
+            } else {
+                console.error("Elements not found:", {
+                    btnNewCategory,
+                    modalCategory,
+                });
+            }
 
-        if (closeCategoryBtn && modalCategory) {
-            closeCategoryBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                modalCategory.close();
-            });
-        }
+            if (closeCategoryBtn && modalCategory) {
+                closeCategoryBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    modalCategory.close();
+                });
+            }
 
-        if (btnSaveCategory) {
-            btnSaveCategory.addEventListener("click", async () => {
-                const name = inputCatName?.value.trim();
-                if (!name) return;
+            if (btnSaveCategory) {
+                btnSaveCategory.addEventListener("click", async () => {
+                    const name = inputCatName?.value.trim();
+                    if (!name) return;
 
-                try {
-                    btnSaveCategory.disabled = true;
-                    btnSaveCategory.textContent = "Guardando...";
+                    try {
+                        btnSaveCategory.disabled = true;
+                        btnSaveCategory.textContent = "Guardando...";
 
-                    if (!API_URL) throw new Error("API URL not found");
+                        if (!API_URL) throw new Error("API URL not found");
 
-                    const res = await fetch(`${API_URL}/categories`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ name }),
+                        const headers = {
+                            "Content-Type": "application/json",
+                        };
+
+                        if (token) {
+                            headers["Authorization"] = `Bearer ${token}`;
+                        }
+
+                        const res = await fetch(`${API_URL}/categories`, {
+                            method: "POST",
+                            headers: headers,
+                            body: JSON.stringify({ name }),
+                        });
+
+                        if (res.ok) {
+                            const newCat = await res.json();
+                            // Agregar al select
+                            const option = document.createElement("option");
+                            option.value = newCat.id;
+                            option.textContent = newCat.name;
+                            option.selected = true; // Seleccionar automáticamente
+                            selectCategory?.appendChild(option);
+
+                            modalCategory?.close();
+
+                            console.log("¡Categoría creada!");
+                        } else {
+                            const err = await res.json();
+                            console.error("Error al crear la categoría", err);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        console.error("Error de conexión");
+                    } finally {
+                        btnSaveCategory.disabled = false;
+                        btnSaveCategory.textContent = "Guardar";
+                    }
+                });
+            }
+
+            // --- Main Form Logic ---
+            const mainForm = document.querySelector("main form");
+            const mainSubmitBtn = mainForm?.querySelector(
+                "button[type='submit']",
+            );
+
+            if (mainForm) {
+                mainForm.addEventListener("submit", () => {
+                    if (mainSubmitBtn) {
+                        mainSubmitBtn.setAttribute("disabled", "true");
+                        mainSubmitBtn.innerHTML = "Guardando...";
+                        mainSubmitBtn.classList.add(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+                    }
+                });
+            }
+
+            // --- AI Autocomplete Logic ---
+            const btnAI = document.getElementById("btn-ai-autocomplete");
+            console.log("Searching for AI button...", btnAI);
+
+            if (btnAI) {
+                btnAI.addEventListener("click", async () => {
+                    console.log("AI Button Clicked");
+                    const titleInput = document.querySelector("#title");
+                    const keySelect = document.querySelector("#key");
+                    const contentInput =
+                        document.querySelector('[name="content"]');
+
+                    console.log("Inputs found:", {
+                        title: !!titleInput,
+                        key: !!keySelect,
+                        content: !!contentInput,
                     });
 
-                    if (res.ok) {
-                        const newCat = await res.json();
-                        // Agregar al select
-                        const option = document.createElement("option");
-                        option.value = newCat.id;
-                        option.textContent = newCat.name;
-                        option.selected = true; // Seleccionar automáticamente
-                        selectCategory?.appendChild(option);
+                    const title = titleInput?.value || "";
+                    const key = keySelect?.value || "";
+                    const content = contentInput?.value || "";
 
-                        modalCategory?.close();
-
-                        // showSuccessToast("¡Categoría creada!");
-                        console.log("¡Categoría creada!");
-                    } else {
-                        const err = await res.json();
-                        // showError("Error", "Error al crear la categoría");
-                        console.error("Error al crear la categoría", err);
+                    if (!title || !key || !content) {
+                        console.error("Datos incompletos");
+                        alert(
+                            "Por favor agrega el Título, Tono y la Letra antes de generar acordes",
+                        );
+                        return;
                     }
-                } catch (e) {
-                    console.error(e);
-                    // showError("Error", "Error de conexión");
-                    console.error("Error de conexión");
-                } finally {
-                    btnSaveCategory.disabled = false;
-                    btnSaveCategory.textContent = "Guardar";
-                }
-            });
-        }
 
-        // --- Main Form Logic ---
-        const mainForm = document.querySelector("main form");
-        const mainSubmitBtn = mainForm?.querySelector("button[type='submit']");
-
-        if (mainForm) {
-            mainForm.addEventListener("submit", () => {
-                if (mainSubmitBtn) {
-                    mainSubmitBtn.setAttribute("disabled", "true");
-                    mainSubmitBtn.innerHTML = "Guardando...";
-                    mainSubmitBtn.classList.add(
-                        "opacity-75",
-                        "cursor-not-allowed",
+                    // Confirmar con el usuario
+                    const confirmResult = confirm(
+                        "¿Deseas que la IA genere los acordes para esta canción?\n\nEsto reemplazará el contenido actual con la versión con acordes.",
                     );
+
+                    if (!confirmResult) return;
+
+                    console.log("--- AI Autocomplete Context ---");
+                    console.log("Title:", title);
+                    console.log("Key:", key);
+                    console.log("Content:", content);
+                    console.log("-------------------------------");
+
+                    try {
+                        // Deshabilitar botón y mostrar estado de carga
+                        btnAI.disabled = true;
+                        const originalText = btnAI.innerHTML;
+                        btnAI.innerHTML =
+                            '<span class="animate-pulse">⏳ Generando acordes...</span>';
+                        btnAI.classList.add("opacity-75", "cursor-not-allowed");
+
+                        // Importar dinámicamente el servicio de IA
+                        const { autocompleteChordsWithAI } =
+                            await import("/src/services/ai.ts");
+
+                        // Llamar al servicio para autocompletar acordes
+                        const result = await autocompleteChordsWithAI(
+                            {
+                                title: title,
+                                tone: key,
+                                lyrics: content,
+                            },
+                            token,
+                        );
+
+                        if (!result.success) {
+                            throw new Error(
+                                result.error || "Error al generar acordes",
+                            );
+                        }
+
+                        const data = result.data;
+                        console.log("AI Response:", data);
+
+                        if (data && data.chordPro) {
+                            // Disparar evento personalizado para que React actualice el editor
+                            window.dispatchEvent(
+                                new CustomEvent("update-editor-content", {
+                                    detail: { content: data.chordPro },
+                                }),
+                            );
+
+                            // Mostrar información de los acordes generados
+                            const chordsList =
+                                data.chords?.list?.join(", ") || "N/A";
+                            alert(
+                                `✅ ¡Acordes generados exitosamente!\n\n` +
+                                    `Acordes encontrados: ${chordsList}\n` +
+                                    `Total: ${data.chords?.count || 0} acordes únicos`,
+                            );
+                        } else {
+                            throw new Error("Respuesta inválida del servidor");
+                        }
+                    } catch (error) {
+                        console.error("Error al generar acordes:", error);
+                        alert(
+                            `❌ Error al generar acordes\n\n` +
+                                `${error instanceof Error ? error.message : "Error desconocido"}\n\n` +
+                                `Por favor intenta nuevamente.`,
+                        );
+                    } finally {
+                        // Restaurar botón
+                        btnAI.disabled = false;
+                        btnAI.innerHTML =
+                            "<span>✨</span> Generar acordes con IA";
+                        btnAI.classList.remove(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+                    }
+                });
+            }
+
+            // --- AI Generate Full Song Logic ---
+            const btnAIFull = document.getElementById("btn-ai-generate-full");
+            console.log("Searching for AI Full Song button...", btnAIFull);
+
+            if (btnAIFull) {
+                btnAIFull.addEventListener("click", async () => {
+                    console.log("AI Full Song Button Clicked");
+                    const titleInput = document.querySelector("#title");
+                    const artistInput = document.querySelector("#artist");
+                    const keySelect = document.querySelector("#key");
+                    const categorySelect =
+                        document.querySelector("#categoryId");
+
+                    const title = titleInput?.value || "";
+                    const artist = artistInput?.value || "";
+                    const key = keySelect?.value || "";
+                    const categoryId = categorySelect?.value || "";
+
+                    if (!title || !key) {
+                        console.error("Datos incompletos");
+                        alert(
+                            "Por favor agrega el Título y Tono antes de generar la canción",
+                        );
+                        return;
+                    }
+
+                    // Confirmar con el usuario
+                    const artistInfo = artist ? ` de ${artist}` : "";
+                    const confirmResult = confirm(
+                        `¿Deseas que la IA busque la letra ORIGINAL de "${title}"${artistInfo} y le agregue acordes?\n\nEsto reemplazará el contenido actual del editor.`,
+                    );
+
+                    if (!confirmResult) return;
+
+                    console.log("--- AI Generate Full Song Context ---");
+                    console.log("Title:", title);
+                    console.log("Artist:", artist);
+                    console.log("Key:", key);
+                    console.log("Category ID:", categoryId);
+                    console.log("-------------------------------");
+
+                    try {
+                        // Deshabilitar botón y mostrar estado de carga
+                        btnAIFull.disabled = true;
+                        const originalText = btnAIFull.innerHTML;
+                        btnAIFull.innerHTML =
+                            '<span class="animate-pulse">⏳ Generando canción...</span>';
+                        btnAIFull.classList.add(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+
+                        // Importar dinámicamente el servicio de IA
+                        const { generateFullSong } =
+                            await import("/src/services/ai.ts");
+
+                        // Obtener el nombre de la categoría (opcional, para enviar al backend)
+                        const categoryName =
+                            categorySelect?.options[
+                                categorySelect.selectedIndex
+                            ]?.text || "Entrada";
+
+                        // Llamar al servicio para generar canción completa
+                        const result = await generateFullSong(
+                            {
+                                title: title,
+                                artist: artist,
+                                tone: key,
+                                category: categoryName,
+                            },
+                            token,
+                        );
+
+                        if (!result.success) {
+                            throw new Error(
+                                result.error || "Error al generar la canción",
+                            );
+                        }
+
+                        const data = result.data;
+                        console.log("AI Full Song Response:", data);
+
+                        if (data && data.chordPro) {
+                            // Disparar evento personalizado para que React actualice el editor
+                            window.dispatchEvent(
+                                new CustomEvent("update-editor-content", {
+                                    detail: { content: data.chordPro },
+                                }),
+                            );
+
+                            // Mostrar información de los acordes generados
+                            const chordsList =
+                                data.chords?.list?.join(", ") || "N/A";
+                            alert(
+                                `✅ ¡Canción generada exitosamente!\n\n` +
+                                    `Acordes encontrados: ${chordsList}\n` +
+                                    `Total: ${data.chords?.count || 0} acordes únicos`,
+                            );
+                        } else {
+                            throw new Error("Respuesta inválida del servidor");
+                        }
+                    } catch (error) {
+                        console.error("Error al generar canción:", error);
+                        alert(
+                            `❌ Error al generar la canción\n\n` +
+                                `${error instanceof Error ? error.message : "Error desconocido"}\n\n` +
+                                `Por favor intenta nuevamente.`,
+                        );
+                    } finally {
+                        // Restaurar botón
+                        btnAIFull.disabled = false;
+                        btnAIFull.innerHTML =
+                            "<span>🎵</span> Generar canción completa";
+                        btnAIFull.classList.remove(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+                    }
+                });
+            }
+
+            // --- Key Logic ---
+            const keySelect = document.querySelector("#key");
+
+            keySelect?.addEventListener("change", (e) => {
+                if (e.target instanceof HTMLSelectElement) {
+                    const newKey = e.target.value;
+                    const event = new CustomEvent("song-key-change", {
+                        detail: { key: newKey },
+                    });
+                    window.dispatchEvent(event);
                 }
             });
-        }
 
-        // --- AI Autocomplete Logic ---
-        const btnAI = document.getElementById("btn-ai-autocomplete");
-        console.log("Searching for AI button...", btnAI);
-
-        if (btnAI) {
-            btnAI.addEventListener("click", async () => {
-                console.log("AI Button Clicked");
-                const titleInput =
-                    document.querySelector<HTMLInputElement>("#title");
-                const keySelect =
-                    document.querySelector<HTMLSelectElement>("#key");
-                const contentInput = document.querySelector<
-                    HTMLTextAreaElement | HTMLInputElement
-                >('[name="content"]');
-
-                console.log("Inputs found:", {
-                    title: !!titleInput,
-                    key: !!keySelect,
-                    content: !!contentInput,
-                });
-
-                const title = titleInput?.value || "";
-                const key = keySelect?.value || "";
-                const content = contentInput?.value || "";
-
-                if (!title || !key || !content) {
-                    console.error("Datos incompletos");
-                    alert("Por favor agrega el Título, Tono y la Letra");
-                    return;
+            // Escuchar cambios desde el editor de acordes
+            window.addEventListener("editor-key-change", (e) => {
+                if (e instanceof CustomEvent) {
+                    if (keySelect && e.detail && e.detail.key) {
+                        keySelect.value = e.detail.key;
+                    }
                 }
-
-                // 1. Confirm with user
-                const confirmResult = confirm(
-                    "¿Deseas intentar autocompletar los acordes?",
-                );
-
-                if (!confirmResult) return;
-
-                console.log("--- AI Autocomplete Context ---");
-                console.log("Title:", title);
-                console.log("Key:", key);
-                console.log("Content:", content);
-                console.log("-------------------------------");
-
-                // showSuccessToast(
-                //     "IA Completando...",
-                //     "Enviando datos para autocompletar...",
-                // );
-                alert("IA Completando... (Simulado)");
-
-                // TODO: Implement actual API call here
-                // const res = await fetch('/api/ai/autocomplete', { ... });
             });
-        }
-
-        // --- Key Logic ---
-        const keySelect = document.querySelector<HTMLSelectElement>("#key");
-
-        keySelect?.addEventListener("change", (e) => {
-            if (e.target instanceof HTMLSelectElement) {
-                const newKey = e.target.value;
-                const event = new CustomEvent("song-key-change", {
-                    detail: { key: newKey },
-                });
-                window.dispatchEvent(event);
-            }
         });
-
-        // Escuchar cambios desde el editor de acordes
-        window.addEventListener("editor-key-change", (e) => {
-            if (e instanceof CustomEvent) {
-                if (keySelect && e.detail && e.detail.key) {
-                    keySelect.value = e.detail.key;
-                }
-            }
-        });
-        // });
     </script>
 </Layout>
