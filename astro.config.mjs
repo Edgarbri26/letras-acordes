@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import react from '@astrojs/react';
-import vercel from '@astrojs/vercel/serverless'; // Importa el adaptador
+import vercel from '@astrojs/vercel'; // Importa el adaptador
 import path from 'path';
 import { fileURLToPath } from 'url';
 
