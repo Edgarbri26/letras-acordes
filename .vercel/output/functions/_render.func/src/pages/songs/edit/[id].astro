@@ -1,0 +1,312 @@
+---
+// export const prerender = false;
+import Layout from "@/layouts/Layout.astro";
+import type { Category } from "@/types/category";
+import ChordEditor from "@/components/ChordEditor.jsx";
+import KeySelector from "@/components/KeySelector.astro";
+import "@/styles/global.css";
+import { updateSong } from "@/services/songs";
+import { getUserFromToken, hasPermission } from "@/utils/auth";
+import {
+    showError,
+    showSuccessToast,
+    showConfirm,
+    showLoading,
+} from "@/utils/alerts";
+import { API_URL } from "@/services/songs";
+
+const token = Astro.cookies.get("token")?.value;
+const user = getUserFromToken(token);
+
+if (!token || !user) {
+    return Astro.redirect("/login");
+}
+
+if (!hasPermission(user, "song.edit")) {
+    return Astro.redirect("/");
+}
+
+const { id } = Astro.params;
+
+let song = null;
+let categories: Category[] = [];
+let error = null;
+
+// Fetch Categories
+try {
+    const res = await fetch(`${API_URL}/categories`);
+    if (res.ok) {
+        categories = await res.json();
+    }
+} catch (e) {
+    console.error("Error fetching categories:", e);
+}
+
+// Fetch Song Data
+try {
+    const res = await fetch(`${API_URL}/songs/${id}`);
+    if (res.ok) {
+        song = await res.json();
+    } else {
+        return Astro.redirect("/");
+    }
+} catch (e) {
+    console.error("Error fetching song:", e);
+    return Astro.redirect("/");
+}
+
+let errorMessage = "";
+const canDelete = hasPermission(user, "song.delete");
+
+// Handle Update
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const result = await updateSong(Number(id), formData, token);
+
+    if (result.success) {
+        return Astro.redirect(`/songs/${id}`);
+    } else {
+        errorMessage = result.error || "Error al actualizar la canción";
+        console.error(result.data);
+    }
+}
+---
+
+<Layout title="Editar Canción">
+    <div class="flex flex-col min-h-screen bg-bg-main text-text-main">
+        <main
+            class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10"
+            data-token={token}
+        >
+            <h1 class="text-3xl font-bold text-accent-main mb-8">
+                Editar Canción
+            </h1>
+
+            <form class="space-y-8" method="POST">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label
+                            for="artist"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Artista / Banda</label
+                        >
+                        <input
+                            type="text"
+                            id="artist"
+                            name="artist"
+                            value={song.artist}
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="title"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Nombre de la canción</label
+                        >
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={song.title}
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="key"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Tono Principal</label
+                        >
+                        <KeySelector
+                            id="key"
+                            name="key"
+                            value={song.key}
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors appearance-none cursor-pointer"
+                        />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label
+                            for="url_song"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Link del Video (YouTube)</label
+                        >
+                        <input
+                            type="url"
+                            id="url_song"
+                            name="url_song"
+                            value={song.url_song || ""}
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="categoryId"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Categoría</label
+                        >
+                        <select
+                            id="categoryId"
+                            name="categoryId"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors appearance-none cursor-pointer"
+                        >
+                            {
+                                categories.map((cat) => (
+                                    <option
+                                        value={cat.id}
+                                        selected={song.categoryId === cat.id}
+                                    >
+                                        {cat.name}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="active"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Estado</label
+                        >
+                        <div
+                            class="flex items-center space-x-3 bg-bg-secondary border border-white/10 rounded-lg p-3 h-[50px]"
+                        >
+                            <input
+                                type="checkbox"
+                                id="active"
+                                name="active"
+                                class={`w-5 h-5 text-accent-main rounded focus:ring-accent-main bg-gray-700 border-gray-600 ${canDelete ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+                                checked={song.active !== false}
+                                disabled={!canDelete}
+                            />
+                            <span
+                                class={`text-text-main ${canDelete ? "cursor-pointer" : "cursor-not-allowed text-gray-500"}`}
+                                onclick={canDelete
+                                    ? "document.getElementById('active').click()"
+                                    : null}>Canción Activa</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-6 flex flex-col gap-20">
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-white">
+                            Letra y Acordes
+                        </h3>
+                        <p class="text-sm text-text-secondary">
+                            Edita la letra y posición de los acordes.
+                        </p>
+                    </div>
+                    {/* Pre-fill content in ChordEditor */}
+                    <ChordEditor
+                        client:only="react"
+                        name="content"
+                        initialContent={song.content}
+                        initialKey={song.key}
+                    />
+                    <div class="pt-4 flex justify-between items-center">
+                        {
+                            canDelete && (
+                                <button
+                                    type="button"
+                                    id="deleteSongBtn"
+                                    data-song-id={song.id}
+                                    class="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/50 font-bold py-3 px-8 rounded-lg transition-colors"
+                                >
+                                    Eliminar Canción
+                                </button>
+                            )
+                        }
+                        {!canDelete && <div />}
+                        {/* Spacer */}
+
+                        <button
+                            type="submit"
+                            class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20"
+                        >
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</Layout>
+
+<script>
+    import { deleteSongById } from "@/services/songs";
+    import {
+        showConfirm,
+        showLoading,
+        showSuccessToast,
+        showError,
+    } from "@/utils/alerts";
+
+    const keySelect = document.getElementById("key") as HTMLSelectElement;
+
+    // Escuchar cambios desde el editor de acordes
+    window.addEventListener("editor-key-change", (e: any) => {
+        if (keySelect && e.detail && e.detail.key) {
+            keySelect.value = e.detail.key;
+            // Opcional: Disparar evento change si hay lógica dependiente
+            keySelect.dispatchEvent(new Event("change"));
+        }
+    });
+
+    // Escuchar cambios del select para avisar al editor (bidireccional)
+    keySelect?.addEventListener("change", (e) => {
+        const target = e.target as HTMLSelectElement;
+        const newKey = target.value;
+        window.dispatchEvent(
+            new CustomEvent("song-key-change", {
+                detail: { key: newKey },
+            }),
+        );
+    });
+
+    // Delete Logic
+    const deleteBtn = document.getElementById("deleteSongBtn");
+    const mainElement = document.querySelector("main");
+    const token = mainElement?.dataset.token;
+
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", async () => {
+            const songId = deleteBtn.getAttribute("data-song-id");
+            if (!songId) return;
+
+            const confirmed = await showConfirm(
+                "¿Eliminar canción?",
+                "Esta acción no se puede deshacer.",
+                "Sí, eliminar",
+            );
+
+            if (confirmed.isConfirmed) {
+                showLoading("Eliminando...");
+                try {
+                    const result = await deleteSongById(songId, token);
+
+                    if (result.success) {
+                        await showSuccessToast(
+                            "Canción eliminada",
+                            undefined,
+                            1500,
+                        );
+                        window.location.href = "/";
+                    } else {
+                        showError("Error", result.error || "Error al eliminar");
+                    }
+                } catch (e) {
+                    showError("Error", "Error de conexión");
+                }
+            }
+        });
+    }
+</script>

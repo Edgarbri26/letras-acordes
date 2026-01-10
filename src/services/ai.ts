@@ -48,7 +48,8 @@ export interface AutocompleteParams {
  */
 export const searchSongByLyrics = async (
     params: SearchSongParams,
-    token?: string
+    token?: string,
+    baseUrl?: string
 ): Promise<ServiceResponse<ChordProResponse>> => {
     try {
         // Validación de parámetros
@@ -67,7 +68,8 @@ export const searchSongByLyrics = async (
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${API_URL}/search/song`, {
+        const apiUrl = baseUrl || API_URL;
+        const response = await fetch(`${apiUrl}/search/song`, {
             method: "POST",
             headers,
             body: JSON.stringify({
@@ -104,7 +106,8 @@ export const searchSongByLyrics = async (
  */
 export const autocompleteChordsWithAI = async (
     params: AutocompleteParams,
-    token?: string
+    token?: string,
+    baseUrl?: string
 ): Promise<ServiceResponse<ChordProResponse>> => {
     try {
         // Validación de parámetros
@@ -123,7 +126,8 @@ export const autocompleteChordsWithAI = async (
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${API_URL}/generate/autocomplete`, {
+        const apiUrl = baseUrl || API_URL;
+        const response = await fetch(`${apiUrl}/generate/autocomplete`, {
             method: "POST",
             headers,
             body: JSON.stringify({
