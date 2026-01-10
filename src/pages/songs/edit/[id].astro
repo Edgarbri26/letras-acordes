@@ -198,10 +198,27 @@ if (Astro.request.method === "POST") {
 
                 <div class="border-t border-white/10 pt-6 flex flex-col gap-20">
                     <div class="mb-4">
-                        <h3 class="text-xl font-semibold text-white">
-                            Letra y Acordes
-                        </h3>
-                        <p class="text-sm text-text-secondary">
+                        <div class="flex items-center gap-3">
+                            <h3 class="text-xl font-semibold text-white">
+                                Letra y Acordes
+                            </h3>
+                            {
+                                canDelete && (
+                                    <button
+                                        type="button"
+                                        id="btn-ai-autocomplete"
+                                        class="text-xs bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-1.5 px-3 rounded-md transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 border border-white/10"
+                                        title="Generar acordes con Inteligencia Artificial"
+                                    >
+                                        <i class="fa-solid fa-wand-magic-sparkles" />
+                                        <span class="hidden md:inline">
+                                            Generar Acordes IA
+                                        </span>
+                                    </button>
+                                )
+                            }
+                        </div>
+                        <p class="text-sm text-text-secondary mt-1">
                             Edita la letra y posición de los acordes.
                         </p>
                     </div>
@@ -306,6 +323,116 @@ if (Astro.request.method === "POST") {
                 } catch (e) {
                     showError("Error", "Error de conexión");
                 }
+            }
+        });
+    }
+
+    // --- AI Autocomplete Logic (Admin Only) ---
+    const btnAI = document.getElementById("btn-ai-autocomplete");
+
+    if (btnAI) {
+        btnAI.addEventListener("click", async () => {
+            const titleInput = document.querySelector(
+                "#title",
+            ) as HTMLInputElement;
+            const keySelect = document.querySelector(
+                "#key",
+            ) as HTMLSelectElement;
+            // The content input is managed by React (ChordEditor), heavily dependent on how it syncs to hidden input
+            // Usually there is a hidden input or we need to get it from the component state,
+            // but here we might rely on the DOM if the React component updates a hidden field or similar.
+            // Looking at the form, ChordEditor updates a hidden input of name="content"?
+            // In add.astro it grabs '[name="content"]'. Let's check edit.astro form...
+            // ChordEditor takes `name="content"`.
+
+            const contentInput = document.querySelector('[name="content"]') as
+                | HTMLInputElement
+                | HTMLTextAreaElement
+                | null;
+
+            const title = titleInput?.value || "";
+            const key = keySelect?.value || "";
+            const content = contentInput?.value || "";
+
+            if (!title || !key || !content) {
+                await showError(
+                    "Datos incompletos",
+                    "Asegúrate de tener título, tono y letra cargada.",
+                );
+                return;
+            }
+
+            const confirmResult = await showConfirm(
+                "¿Generar acordes con IA?",
+                "Se reemplazarán los acordes actuales. Se recomienda guardar antes si tienes cambios sin salvar.",
+                "Sí, generar",
+                "Cancelar",
+            );
+
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                showLoading("Generando acordes con IA...");
+                btnAI.setAttribute("disabled", "true");
+                btnAI.classList.add("opacity-50", "cursor-not-allowed");
+
+                const { autocompleteChordsWithAI } =
+                    await import("../../../services/ai.ts"); // Adjust path to services/ai.ts
+
+                // We need API_URL. In this file it is imported server-side.
+                // We need to pass it to client or assume a public var if services/ai.ts uses it.
+                // services/ai.ts usually imports API_URL from songs.ts or similar.
+                // But `autocompleteChordsWithAI` usually takes it as arg.
+                // Let's use the one from `import { API_URL } from "@/services/songs";`?
+                // Wait, client-side imports of "@/services/songs" might not work if it relies on process.env.
+                // Safest is to get it from a data attribute or predefined var if possible.
+                // However, the `add.astro` does `import { API_URL } ...` (wait, does it?)
+                // Actually `add.astro` had `const API_URL = ...` logic or similar.
+                // Let's check how we can get API_URL here.
+                // The layout or main usually has it?
+                // Let's assume we can fetch it or hardcode /api if relative.
+                // Best bet: The `scripts` section in `edit` imports `API_URL` from services/songs?
+                // Wait, it imports `deleteSongById` from services/songs.
+                // Let's try importing API_URL.
+
+                const { API_URL } = await import("../../../services/songs");
+
+                const result = await autocompleteChordsWithAI(
+                    {
+                        title: title,
+                        tone: key,
+                        lyrics: content,
+                    },
+                    token, // Token is available in this scope? Yes, from data-token at top
+                    API_URL,
+                );
+
+                if (!result.success) {
+                    throw new Error(result.error || "Error al generar");
+                }
+
+                const data = result.data;
+                if (data && data.chordPro) {
+                    // Update Editor
+                    window.dispatchEvent(
+                        new CustomEvent("update-editor-content", {
+                            detail: { content: data.chordPro },
+                        }),
+                    );
+
+                    await showSuccessToast(
+                        "¡Acordes generados!",
+                        `Se agregaron acordes a la canción.`,
+                        3000,
+                    );
+                }
+            } catch (error: any) {
+                console.error(error);
+                await showError("Error", error.message || "Error desconocido");
+            } finally {
+                Swal.close();
+                btnAI.removeAttribute("disabled");
+                btnAI.classList.remove("opacity-50", "cursor-not-allowed");
             }
         });
     }
