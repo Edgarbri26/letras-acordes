@@ -16,24 +16,28 @@ const {
         <span class="text-text-secondary">Autor:</span>
         {artist}
     </h2>
-    <div class="flex items-center gap-4 mt-4 text-sm text-text-secondary">
-        <span
-            class="bg-bg-secondary px-3 py-1 rounded-full border border-white/10"
-        >
-            Ton: <span id="header-tone" class="text-accent-main font-bold"
-                >{tone}</span
-            >
-        </span>
-        <a href={`/search/all?categoryId=${category?.id}`} target="_blank">
+    <div
+        class="flex flex-col sm:flex-row sm:justify-start justify-between gap-4 mt-4 text-sm text-text-secondary"
+    >
+        <div class="flex items-center justify-start gap-2">
             <span
-                class="cursor-pointer hover:underline bg-bg-secondary px-3 py-1 rounded-full border border-white/10 text-accent-main/90 font-bold"
+                class="bg-bg-secondary px-3 py-1 rounded-full border border-white/10"
             >
-                {category?.name}
+                Ton: <span id="header-tone" class="text-accent-main font-bold"
+                    >{tone}</span
+                >
             </span>
-        </a>
+            <a href={`/search/all?categoryId=${category?.id}`} target="_blank">
+                <span
+                    class="cursor-pointer hover:underline bg-bg-secondary px-3 py-1 rounded-full border border-white/10 text-accent-main/90 font-bold"
+                >
+                    {category?.name}
+                </span>
+            </a>
+        </div>
         {
             user && (
-                <span class="text-xs text-text-secondary/80 ml-auto">
+                <span class="text-sm text-text-secondary/80 sm:ml-auto ml-0">
                     Creado por: {user.name}
                 </span>
             )

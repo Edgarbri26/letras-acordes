@@ -73,7 +73,7 @@ if (Astro.request.method === "POST") {
 ---
 
 <Layout title="Editar Canción">
-    <div class="flex flex-col min-h-screen bg-bg-main text-text-main">
+    <div class="flex flex-col h-full bg-bg-main text-text-main">
         <main
             class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10"
             data-token={token}
@@ -266,7 +266,7 @@ if (Astro.request.method === "POST") {
         showSuccessToast,
         showError,
     } from "@/utils/alerts";
-import Swal from "sweetalert2";
+    import Swal from "sweetalert2";
 
     const keySelect = document.getElementById("key") as HTMLSelectElement;
 

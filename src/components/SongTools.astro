@@ -7,89 +7,163 @@ const canEditSong = hasPermission(user, "song.edit");
 ---
 
 <aside
-    class="w-16 flex flex-col items-center py-4 gap-4 sticky top-16 h-[calc(100vh-4rem)] border-r border-white/5 md:flex no-print"
+    id="song-tools-aside"
+    class="w-16 flex flex-col items-center py-4 gap-4 sticky top-16 h-[calc(100vh-4rem)] border-r border-white/5 md:flex no-print transition-all duration-300 ease-in-out overflow-visible z-40 bg-bg-main"
 >
-    <a
-        href={`/`}
-        class="p-2 text-text-secondary hover:text-accent-main transition"
-        title="Volver"
+    <!-- Toggle Button -->
+    <button
+        id="btn-toggle-tools"
+        class="p-2 text-text-secondary hover:text-accent-main transition-all duration-300 absolute right-1/2 translate-x-1/2 top-4 z-50 bg-bg-main rounded-full"
+        title="Ocultar herramientas"
     >
-        <i class="fa-solid fa-arrow-left"></i>
-    </a>
+        <i
+            class="fa-solid fa-arrow-left transition-transform duration-300"
+            id="icon-toggle"></i>
+    </button>
 
-    {/* Botones de Tono */}
-    <div class="flex flex-col gap-1 items-center">
+    <!-- Tools Container -->
+    <div
+        id="tools-content"
+        class="flex flex-col items-center gap-4 mt-12 w-full opacity-100 transition-opacity duration-300"
+    >
+        {/* Botones de Tono */}
+        <div class="flex flex-col gap-1 items-center">
+            <button
+                id="btn-transpose-up"
+                class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
+                title="Subir Tono"
+            >
+                <i
+                    class="fa-solid fa-plus w-5 h-5 flex items-center justify-center"
+                ></i>
+            </button>
+            <span class="text-xs text-text-secondary whitespace-nowrap"
+                >Tono</span
+            >
+            <button
+                id="btn-transpose-down"
+                class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
+                title="Bajar Tono"
+            >
+                <i
+                    class="fa-solid fa-minus w-5 h-5 flex items-center justify-center"
+                ></i>
+            </button>
+        </div>
+
+        <div class="h-px w-8 bg-white/10 my-1"></div>
+
         <button
-            id="btn-transpose-up"
-            class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
-            title="Subir Tono"
-        >
-            <i class="fa-solid fa-plus w-5 h-5 flex items-center justify-center"
-            ></i>
-        </button>
-        <span class="text-xs text-text-secondary">Tono</span>
-        <button
-            id="btn-transpose-down"
-            class="p-2 text-text-secondary hover:text-accent-main transition font-bold"
-            title="Bajar Tono"
+            id="btn-toggle-chords"
+            class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
+            title="Alternar Acordes"
         >
             <i
-                class="fa-solid fa-minus w-5 h-5 flex items-center justify-center"
+                class="fa-solid fa-music w-5 h-5 flex items-center justify-center"
+            ></i>
+            <span class="text-[10px]">Acordes</span>
+        </button>
+
+        <div class="h-px w-8 bg-white/10 my-1"></div>
+        <button
+            id="btn-print"
+            class="p-2 text-text-secondary hover:text-accent-main transition"
+            title="Imprimir"
+        >
+            <i
+                class="fa-solid fa-print w-5 h-5 flex items-center justify-center"
             ></i>
         </button>
-    </div>
 
-    <div class="h-px w-8 bg-white/10 my-1"></div>
-
-    <button
-        id="btn-toggle-chords"
-        class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
-        title="Alternar Acordes"
-    >
-        <i class="fa-solid fa-music w-5 h-5 flex items-center justify-center"
-        ></i>
-        <span class="text-[10px]">Acordes</span>
-    </button>
-
-    <div class="h-px w-8 bg-white/10 my-1"></div>
-    <button
-        id="btn-print"
-        class="p-2 text-text-secondary hover:text-accent-main transition"
-        title="Imprimir"
-    >
-        <i class="fa-solid fa-print w-5 h-5 flex items-center justify-center"
-        ></i>
-    </button>
-
-    {
-        canEditSong && (
-            <a
-                href={`/songs/edit/${id}`}
-                class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
-                title="Editar"
-            >
-                <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-pencil"
+        {
+            canEditSong && (
+                <a
+                    href={`/songs/edit/${id}`}
+                    class="p-2 text-text-secondary hover:text-accent-main transition flex flex-col items-center gap-1"
+                    title="Editar"
                 >
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                </svg>
-            </a>
-        )
-    }
+                    <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="lucide lucide-pencil"
+                    >
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                        <path d="m15 5 4 4" />
+                    </svg>
+                </a>
+            )
+        }
+    </div>
 </aside>
 
 <script>
     const btnUp = document.getElementById("btn-transpose-up");
     const btnDown = document.getElementById("btn-transpose-down");
+    const btnToggleChords = document.getElementById("btn-toggle-chords");
+    const btnPrint = document.getElementById("btn-print");
+
+    // Toggle Logic
+    const aside = document.getElementById("song-tools-aside");
+    const btnToggle = document.getElementById("btn-toggle-tools");
+    const iconToggle = document.getElementById("icon-toggle");
+    const toolsContent = document.getElementById("tools-content");
+
+    let isCollapsed = false;
+
+    btnToggle?.addEventListener("click", () => {
+        isCollapsed = !isCollapsed;
+
+        if (isCollapsed) {
+            // Collapse
+            aside?.classList.remove("w-16", "border-r");
+            aside?.classList.add("w-0", "border-none");
+
+            // Adjust button to float
+            // Remove centering classes and add specific positioning
+            // Adjust button to float
+            // Remove centering classes and add specific positioning
+            btnToggle.classList.remove(
+                "right-1/2",
+                "translate-x-1/2",
+                "bg-bg-main",
+            );
+            btnToggle.classList.add("left-2", "bg-bg-secondary", "shadow-lg");
+
+            // Rotate icon
+            iconToggle?.classList.add("rotate-180");
+
+            // Hide content
+            toolsContent?.classList.add("opacity-0", "pointer-events-none");
+        } else {
+            // Expand
+            aside?.classList.add("w-16", "border-r");
+            aside?.classList.remove("w-0", "border-none");
+
+            // Restore button
+            btnToggle.classList.add(
+                "right-1/2",
+                "translate-x-1/2",
+                "bg-bg-main",
+            );
+            btnToggle.classList.remove(
+                "left-2",
+                "bg-bg-secondary",
+                "shadow-lg",
+            );
+
+            // Rotate icon back
+            iconToggle?.classList.remove("rotate-180");
+
+            // Show content
+            toolsContent?.classList.remove("opacity-0", "pointer-events-none");
+        }
+    });
 
     const dispatchTranspose = (semitones: number) => {
         window.dispatchEvent(
@@ -102,12 +176,10 @@ const canEditSong = hasPermission(user, "song.edit");
     btnUp?.addEventListener("click", () => dispatchTranspose(1));
     btnDown?.addEventListener("click", () => dispatchTranspose(-1));
 
-    const btnToggleChords = document.getElementById("btn-toggle-chords");
     btnToggleChords?.addEventListener("click", () => {
         window.dispatchEvent(new CustomEvent("song-toggle-chords"));
     });
 
-    const btnPrint = document.getElementById("btn-print");
     btnPrint?.addEventListener("click", () => {
         window.print();
     });
