@@ -24,7 +24,7 @@ const canEditSong = hasPermission(user, "song.edit");
     <!-- Tools Container -->
     <div
         id="tools-content"
-        class="flex flex-col items-center gap-4 mt-12 w-full opacity-100 transition-opacity duration-300"
+        class="flex flex-col items-center gap-4 mt-12 w-full opacity-100 transition-opacity duration-300 overflow-hidden"
     >
         {/* Botones de Tono */}
         <div class="flex flex-col gap-1 items-center">
@@ -121,11 +121,9 @@ const canEditSong = hasPermission(user, "song.edit");
 
         if (isCollapsed) {
             // Collapse
-            aside?.classList.remove("w-16", "border-r");
-            aside?.classList.add("w-0", "border-none");
+            aside?.classList.remove("w-16", "border-r", "py-4");
+            aside?.classList.add("w-0", "border-none", "p-0", "min-w-0");
 
-            // Adjust button to float
-            // Remove centering classes and add specific positioning
             // Adjust button to float
             // Remove centering classes and add specific positioning
             btnToggle.classList.remove(
@@ -142,8 +140,8 @@ const canEditSong = hasPermission(user, "song.edit");
             toolsContent?.classList.add("opacity-0", "pointer-events-none");
         } else {
             // Expand
-            aside?.classList.add("w-16", "border-r");
-            aside?.classList.remove("w-0", "border-none");
+            aside?.classList.add("w-16", "border-r", "py-4");
+            aside?.classList.remove("w-0", "border-none", "p-0", "min-w-0");
 
             // Restore button
             btnToggle.classList.add(
@@ -163,6 +161,33 @@ const canEditSong = hasPermission(user, "song.edit");
             // Show content
             toolsContent?.classList.remove("opacity-0", "pointer-events-none");
         }
+    });
+
+    let lastScrollTop = 0;
+
+    window.addEventListener("scroll", () => {
+        if (!isCollapsed || !btnToggle) return;
+
+        const currentScroll =
+            window.pageYOffset || document.documentElement.scrollTop;
+
+        if (currentScroll > lastScrollTop && currentScroll > 50) {
+            // Scroll Down - Hide button
+            btnToggle.classList.add(
+                "-translate-x-full",
+                "opacity-0",
+                "pointer-events-none",
+            );
+        } else {
+            // Scroll Up - Show button
+            btnToggle.classList.remove(
+                "-translate-x-full",
+                "opacity-0",
+                "pointer-events-none",
+            );
+        }
+
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
     });
 
     const dispatchTranspose = (semitones: number) => {
