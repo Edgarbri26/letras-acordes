@@ -1,5 +1,6 @@
 ---
 // export const prerender = false;
+Astro.response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60");
 import Layout from "@/layouts/Layout.astro";
 import HeaderLyric from "@/components/HeaderLyric.astro";
 import SongView from "@/components/SongView.jsx";

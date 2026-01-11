@@ -24,6 +24,7 @@ const isActive = (path: string) => {
         <a
             href="/"
             class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive("/") && currentPath === "/" ? "text-accent-main" : "text-text-secondary hover:text-text-main"}`}
+            data-astro-prefetch
         >
             <i class="fa-solid fa-home text-xl"></i>
             <span class="text-[10px] font-medium">Inicio</span>
@@ -32,6 +33,7 @@ const isActive = (path: string) => {
         <a
             href="/misas"
             class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive("/misas") ? "text-accent-main" : "text-text-secondary hover:text-text-main"}`}
+            data-astro-prefetch
         >
             <i class="fa-solid fa-book text-xl"></i>
             <span class="text-[10px] font-medium">Misas</span>
@@ -42,6 +44,7 @@ const isActive = (path: string) => {
                 <a
                     href="/songs/add"
                     class="flex flex-col items-center justify-center w-full h-full -mt-6"
+                    data-astro-prefetch
                 >
                     <div
                         class={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg ${isActive("/songs/add") ? "bg-accent-main text-white ring-4 ring-bg-secondary" : "bg-bg-main border border-white/10 text-accent-main"}`}
@@ -56,6 +59,7 @@ const isActive = (path: string) => {
                 <a
                     href="/search/all"
                     class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive("/songs/all") ? "text-accent-main" : "text-text-secondary hover:text-text-main"}`}
+                    data-astro-prefetch
                 >
                     <i class="fa-solid fa-music text-xl" />
                     <span class="text-[10px] font-medium">Canciones</span>
@@ -68,6 +72,7 @@ const isActive = (path: string) => {
                 <a
                     href="/admin/users"
                     class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive("/admin") ? "text-accent-main" : "text-text-secondary hover:text-text-main"}`}
+                    data-astro-prefetch
                 >
                     <i class="fa-solid fa-shield text-xl" />
                     <span class="text-[10px] font-medium">Admin</span>
@@ -88,6 +93,7 @@ const isActive = (path: string) => {
                 <a
                     href="/login"
                     class={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive("/login") ? "text-accent-main" : "text-text-secondary hover:text-text-main"}`}
+                    data-astro-prefetch
                 >
                     <i class="fa-solid fa-user text-xl" />
                     <span class="text-[10px] font-medium">Ingresar</span>

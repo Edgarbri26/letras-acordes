@@ -2,7 +2,7 @@
 const { song } = Astro.props;
 ---
 
-<a href={`/songs/${song.id}`} class="block group">
+<a href={`/songs/${song.id}`} class="block group" data-astro-prefetch>
     <article
         class="bg-bg-secondary border border-white/5 rounded-xl p-5 hover:border-accent-main/50 transition-colors h-full"
     >

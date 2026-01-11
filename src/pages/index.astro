@@ -1,5 +1,6 @@
 ---
 // export const prerender = false;
+Astro.response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60");
 import Layout from "@/layouts/Layout.astro";
 import "../styles/global.css";
 
@@ -131,6 +132,7 @@ const schema = {
 					<a
 						href="/search/all"
 						class="text-sm font-medium text-accent-main hover:text-white transition-colors"
+						data-astro-prefetch
 					>
 						Ver todas →
 					</a>
@@ -141,6 +143,7 @@ const schema = {
 					<a
 						href="/search/all"
 						class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-bg-secondary text-text-secondary hover:text-white hover:bg-white/10"
+						data-astro-prefetch
 					>
 						Explorar Todas
 					</a>
@@ -153,6 +156,7 @@ const schema = {
 										: `/search/all?categoryId=${cat.id}`
 								}
 								class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${cat.id === -1 ? "bg-red-900/30 text-red-200 border border-red-500/30 hover:bg-red-900/50" : "bg-bg-secondary text-text-secondary hover:text-white hover:bg-white/10"}`}
+								data-astro-prefetch
 							>
 								{cat.name}
 							</a>
@@ -169,6 +173,7 @@ const schema = {
 							<a
 								href="/add-song"
 								class="text-accent-main hover:underline"
+								data-astro-prefetch
 							>
 								¡Sube la primera!
 							</a>

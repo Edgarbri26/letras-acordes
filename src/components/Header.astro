@@ -17,6 +17,7 @@ import SearchInput from "./SearchInput.astro";
             <a
                 href="/"
                 class="text-2xl font-bold text-accent-main tracking-tighter flex items-center"
+                data-astro-prefetch
             >
                 <!-- Large Logo (Desktop) -->
                 <img
@@ -54,19 +55,23 @@ import SearchInput from "./SearchInput.astro";
                 <li
                     class="hover:text-text-main cursor-pointer transition-colors"
                 >
-                    <a href="/misas">Misas</a>
+                    <a href="/misas" data-astro-prefetch>Misas</a>
                 </li>
                 {
                     isLoggedIn && canCreateSong && (
                         <li class="hover:text-text-main cursor-pointer transition-colors">
-                            <a href="/songs/add">Add</a>
+                            <a href="/songs/add" data-astro-prefetch>
+                                Add
+                            </a>
                         </li>
                     )
                 }
                 {
                     isLoggedIn && canViewAdmin && (
                         <li class="hover:text-text-main cursor-pointer transition-colors">
-                            <a href="/admin/users">Admin</a>
+                            <a href="/admin/users" data-astro-prefetch>
+                                Admin
+                            </a>
                         </li>
                     )
                 }
@@ -74,11 +79,15 @@ import SearchInput from "./SearchInput.astro";
                 {
                     isLoggedIn ? (
                         <li class="text-red-400 hover:text-red-300 cursor-pointer font-bold">
-                            <a href="/logout">Cerrar Sesión</a>
+                            <a href="/logout" data-astro-prefetch>
+                                Cerrar Sesión
+                            </a>
                         </li>
                     ) : (
                         <li class="text-accent-main hover:text-accent-secondary cursor-pointer font-bold">
-                            <a href="/login">Ingresar</a>
+                            <a href="/login" data-astro-prefetch>
+                                Ingresar
+                            </a>
                         </li>
                     )
                 }
