@@ -6,6 +6,7 @@ const isLoggedIn = !!user;
 
 const canCreateSong = hasPermission(user, "song.create");
 const canViewAdmin = hasPermission(user, "view.admin");
+import SearchInput from "./SearchInput.astro";
 ---
 
 <header
@@ -34,18 +35,7 @@ const canViewAdmin = hasPermission(user, "view.admin");
             </a>
         </div>
 
-        <div class="flex-1 max-w-xl mx-4">
-            <div class="relative flex justify-center items-center">
-                <input
-                    class="w-full bg-bg-main border border-white/10 rounded-full py-2 px-4 pl-10 text-text-main focus:outline-none focus:border-accent-main transition-colors"
-                    type="search"
-                    placeholder="¿Qué quieres tocar y cantar hoy?"
-                />
-                <i
-                    class="fa-solid pt-0.5 fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 flex items-center justify-center"
-                ></i>
-            </div>
-        </div>
+        <SearchInput />
 
         <nav class="flex items-center gap-4">
             <button
@@ -98,9 +88,6 @@ const canViewAdmin = hasPermission(user, "view.admin");
 </header>
 
 <script>
-    const searchInput = document.querySelector(
-        'input[type="search"]',
-    ) as HTMLInputElement;
     const menuToggle = document.getElementById("menu-toggle");
     const menuList = document.getElementById("menu-list");
 
@@ -108,19 +95,6 @@ const canViewAdmin = hasPermission(user, "view.admin");
         menuToggle.addEventListener("click", () => {
             menuList.classList.toggle("hidden");
             menuList.classList.toggle("flex");
-        });
-    }
-
-    if (searchInput) {
-        searchInput.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                const query = searchInput.value.trim();
-                if (query) {
-                    window.location.href = `/search/${encodeURIComponent(query)}`;
-                } else {
-                    window.location.href = `/search/all`;
-                }
-            }
         });
     }
 </script>

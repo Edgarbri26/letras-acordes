@@ -7,20 +7,27 @@ const {
     category,
     url_song = "",
     user,
+    id,
 } = Astro.props;
 ---
 
 <header class="mb-8">
-    <h1 class="text-4xl font-extrabold text-text-main mb-1">{title}</h1>
+    <h1
+        class="text-4xl font-extrabold text-text-main mb-1"
+        transition:name={`song title ${id}`}
+    >
+        {title}
+    </h1>
     <h2 class="text-xl text-accent-main font-medium">
         <span class="text-text-secondary">Autor:</span>
-        {artist}
+        <span transition:name={`song artist ${id}`}>{artist}</span>
     </h2>
     <div
         class="flex flex-col sm:flex-row sm:justify-start justify-between gap-4 mt-4 text-sm text-text-secondary"
     >
         <div class="flex items-center justify-start gap-2">
             <span
+                transition:name={`song tone ${id}`}
                 class="bg-bg-secondary px-3 py-1 rounded-full border border-white/10"
             >
                 Ton: <span id="header-tone" class="text-accent-main font-bold"
@@ -29,6 +36,7 @@ const {
             </span>
             <a href={`/search/all?categoryId=${category?.id}`} target="_blank">
                 <span
+                    transition:name={`song category ${id}`}
                     class="cursor-pointer hover:underline bg-bg-secondary px-3 py-1 rounded-full border border-white/10 text-accent-main/90 font-bold"
                 >
                     {category?.name}

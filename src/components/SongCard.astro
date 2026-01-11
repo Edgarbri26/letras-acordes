@@ -7,21 +7,27 @@ const { song } = Astro.props;
         class="bg-bg-secondary border border-white/5 rounded-xl p-5 hover:border-accent-main/50 transition-colors h-full"
     >
         <h2
+            transition:name={`song title ${song.id}`}
             class="text-xl font-bold text-white group-hover:text-accent-main transition-colors mb-1 truncate"
         >
             {song.title}
         </h2>
-        <p class="text-text-secondary text-sm mb-4">
+        <p
+            transition:name={`song artist ${song.id}`}
+            class="text-text-secondary text-sm mb-4"
+        >
             {song.artist}
         </p>
 
         <div class="flex items-center gap-2">
             <span
+                transition:name={`song tone ${song.id}`}
                 class="text-xs bg-white/5 px-2 py-1 rounded text-text-secondary group-hover:bg-accent-main/10 group-hover:text-accent-main transition-colors"
             >
                 Tom: {song.key}
             </span>
             <span
+                transition:name={`song category ${song.id}`}
                 class="text-xs bg-white/5 px-2 py-1 rounded text-text-secondary group-hover:bg-accent-main/10 group-hover:text-accent-main transition-colors"
             >
                 Categoría: {song.category?.name}
