@@ -56,6 +56,17 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
     const handleAddSong = async () => {
         if (!selectedSong) return;
 
+        if (!selectedMomentId) {
+            Swal.fire({
+                icon: "warning",
+                title: "Momento requerido",
+                text: "Por favor selecciona un momento para la canción.",
+                background: "#1f2937",
+                color: "#fff"
+            });
+            return;
+        }
+
         setIsSubmitting(true);
         // setMessage({ type: "", text: "" });
 
@@ -63,7 +74,7 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
             const res = await addSongToMisa(
                 misaId,
                 selectedSong.id,
-                selectedMomentId ? parseInt(selectedMomentId) : null,
+                parseInt(selectedMomentId),
                 selectedKey,
                 token,
                 editToken
@@ -89,10 +100,12 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
                 setSelectedKey("");
 
             } else {
+                console.error("Error adding song:", res.error, res.data);
                 Swal.fire({
                     icon: "error",
                     title: "Error",
                     text: res.error || "No se pudo agregar la canción",
+                    footer: res.data ? `<pre class="text-xs text-left">${JSON.stringify(res.data, null, 2)}</pre>` : null,
                     background: "#1f2937",
                     color: "#fff"
                 });
@@ -117,7 +130,18 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
     };
 
     useEffect(() => {
-        // Expose function globally for Astro buttons
+        // Function to handle the custom event
+        const handleOpenModalEvent = (event) => {
+            const { momentId } = event.detail;
+            console.log("Received open-add-song-modal event with:", momentId);
+            setSelectedMomentId(momentId);
+            setIsOpen(true);
+        };
+
+        // Listen for the custom event dispatched by vanilla JS buttons
+        window.addEventListener("open-add-song-modal", handleOpenModalEvent);
+
+        // Keep the global function as a fallback/legacy, but the event is preferred
         window.openAddSongModal = (momentId) => {
             console.log("Global openAddSongModal called with:", momentId);
             setSelectedMomentId(momentId);
@@ -125,6 +149,7 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
         };
 
         return () => {
+            window.removeEventListener("open-add-song-modal", handleOpenModalEvent);
             delete window.openAddSongModal;
         };
     }, []);
@@ -202,7 +227,7 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
                                         </button>
                                     </form>
 
-                                    {searchResults.length > 0 && (
+                                    {searchResults.length > 0 ? (
                                         <ul className="divide-y divide-gray-200 dark:divide-gray-700 max-h-60 overflow-y-auto">
                                             {searchResults.map((song) => (
                                                 <li
@@ -224,6 +249,20 @@ export default function MisaSongManager({ misaId, moments, token, editToken }) {
                                                 </li>
                                             ))}
                                         </ul>
+                                    ) : (
+                                        searchTerm && !isSearching && message.text === "No se encontraron canciones." && (
+                                            <div className="text-center py-4 space-y-3">
+                                                <p className="text-gray-500 text-sm">¿No encuentras la canción?</p>
+                                                <a
+                                                    href="/songs/add"
+                                                    target="_blank"
+                                                    className="inline-block bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded transition-colors"
+                                                >
+                                                    + Crear Nueva Canción
+                                                </a>
+                                                <p className="text-xs text-gray-400">Se abrirá en una nueva pestaña. Luego vuelve aquí y búscala.</p>
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             ) : (

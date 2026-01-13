@@ -138,11 +138,30 @@ const canEditSong = hasPermission(user, "song.edit");
     // Mobile Default: Shown (isCollapsed=false).
     // Desktop Default: Compact (isCollapsed=false).
 
-    // Initial Setup for Desktop: Arrow should point Right (Rotate 180) to indicate expansion available?
-    // Current Icon: Arrow Left.
-    // If we want it to point RIGHT in Compact mode, we need rotate-180.
-    if (window.innerWidth >= 768) {
-        iconToggle?.classList.add("rotate-180");
+    // Initial Setup
+    // Mobile Default: Shown (isCollapsed=false).
+    // Desktop Default: Expanded (isCollapsed=true in this logic).
+
+    const isDesktop = window.innerWidth >= 768;
+
+    if (isDesktop) {
+        isCollapsed = true;
+
+        // Apply Expanded Styles Immediately
+        aside?.classList.remove("w-16");
+        aside?.classList.add("w-56");
+
+        // Arrow points Left by default (which means "Collapse"), so NO rotation needed.
+
+        // Show labels
+        const labels = document.querySelectorAll(".tool-label");
+        labels.forEach((el) => {
+            el.classList.remove("opacity-0", "w-0", "hidden");
+            el.classList.add("opacity-100", "w-auto");
+        });
+    } else {
+        // Mobile: Default is Shown (w-16). Arrow points Left (Hide).
+        // No changes needed to HTML defaults.
     }
 
     btnToggle?.addEventListener("click", () => {

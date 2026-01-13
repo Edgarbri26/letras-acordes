@@ -13,20 +13,25 @@ import {
 
 import Swal from "sweetalert2";
 
-document.addEventListener("DOMContentLoaded", () => {
+const initMisaDetails = () => {
     // Edit Tone Logic
     const editToneBtns = document.querySelectorAll(
         'button[data-action="edit-tone"]',
     );
     editToneBtns.forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+        // Clone button to remove existing listeners to prevent duplicates if function runs multiple times
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode?.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener("click", async (e: Event) => {
             e.preventDefault();
             e.stopPropagation(); // Prevent navigation from parent anchor
 
-            const currentTone = btn.getAttribute("data-current-tone");
-            const misaId = Number(btn.getAttribute("data-misa-id"));
+            const target = e.currentTarget as HTMLElement;
+            const currentTone = target.getAttribute("data-current-tone");
+            const misaId = Number(target.getAttribute("data-misa-id"));
             const misaSongId = Number(
-                btn.getAttribute("data-misa-song-id"),
+                target.getAttribute("data-misa-song-id"),
             );
             const token = document
                 .querySelector("main")
@@ -80,16 +85,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const buttons = document.querySelectorAll(".add-song-btn");
     buttons.forEach((btn) => {
+        // Avoid duplicate listeners
+        if (btn.getAttribute("data-listener-attached") === "true") return;
+        btn.setAttribute("data-listener-attached", "true");
+
         btn.addEventListener("click", () => {
             const momentId = btn.getAttribute("data-moment-id");
-            if ((window as any).openAddSongModal && momentId) {
-                (window as any).openAddSongModal(momentId);
-            } else {
-                showError(
-                    "Error",
-                    "El gestor de canciones no está cargado. Intenta recargar la página.",
-                );
-            }
+            console.log("Dispatching open-add-song-modal event", { momentId });
+            window.dispatchEvent(
+                new CustomEvent("open-add-song-modal", {
+                    detail: { momentId },
+                }),
+            );
         });
     });
 
@@ -97,9 +104,14 @@ document.addEventListener("DOMContentLoaded", () => {
         'button[data-action="delete-song"]',
     );
     deleteButtons.forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
+        // Clone button to remove existing listeners
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode?.replaceChild(newBtn, btn);
+
+        newBtn.addEventListener("click", async (e: Event) => {
             e.preventDefault();
 
+            const target = e.currentTarget as HTMLElement;
             const result = await showConfirm(
                 "¿Eliminar canción?",
                 "No podrás deshacer esta acción",
@@ -108,9 +120,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!result.isConfirmed) return;
 
-            const misaId = Number(btn.getAttribute("data-misa-id"));
+            const misaId = Number(target.getAttribute("data-misa-id"));
             const misaSongId = Number(
-                btn.getAttribute("data-misa-song-id"),
+                target.getAttribute("data-misa-song-id"),
             );
 
             const token = document
@@ -169,9 +181,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const copyShareLinkBtn = document.getElementById("copyShareLinkBtn");
     if (copyShareLinkBtn) {
-        copyShareLinkBtn.addEventListener("click", () => {
+        // Clone button to remove existing listeners
+        const newBtn = copyShareLinkBtn.cloneNode(true);
+        copyShareLinkBtn.parentNode?.replaceChild(newBtn, copyShareLinkBtn);
+
+        newBtn.addEventListener("click", () => {
+            const target = newBtn as HTMLElement;
             const shareToken =
-                copyShareLinkBtn.getAttribute("data-share-token");
+                target.getAttribute("data-share-token");
             if (shareToken) {
                 // Construct URL to point to /misas/view/:id
                 const path = window.location.pathname.replace("/misas/", "/misas/view/");
@@ -193,9 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const copyEditorLinkBtn = document.getElementById("copyEditorLinkBtn");
     if (copyEditorLinkBtn) {
-        copyEditorLinkBtn.addEventListener("click", () => {
+        // Clone button to remove existing listeners
+        const newBtn = copyEditorLinkBtn.cloneNode(true);
+        copyEditorLinkBtn.parentNode?.replaceChild(newBtn, copyEditorLinkBtn);
+
+        newBtn.addEventListener("click", () => {
+            const target = newBtn as HTMLElement;
             const editToken =
-                copyEditorLinkBtn.getAttribute("data-edit-token");
+                target.getAttribute("data-edit-token");
             console.log("Copy Editor Btn clicked. Token:", editToken);
 
             if (editToken) {
@@ -222,29 +244,42 @@ document.addEventListener("DOMContentLoaded", () => {
     ) as HTMLFormElement;
 
     if (editMisaBtn && editMisaModal && closeEditMisaModal) {
-        editMisaBtn.addEventListener("click", () => {
+        // Clone buttons to remove existing listeners
+        const newEditMisaBtn = editMisaBtn.cloneNode(true);
+        editMisaBtn.parentNode?.replaceChild(newEditMisaBtn, editMisaBtn);
+
+        const newCloseEditMisaModal = closeEditMisaModal.cloneNode(true);
+        closeEditMisaModal.parentNode?.replaceChild(newCloseEditMisaModal, closeEditMisaModal);
+
+        newEditMisaBtn.addEventListener("click", () => {
             editMisaModal.classList.remove("hidden");
         });
 
-        closeEditMisaModal.addEventListener("click", () => {
+        newCloseEditMisaModal.addEventListener("click", () => {
             editMisaModal.classList.add("hidden");
         });
 
-        editMisaModal.addEventListener("click", (e) => {
+        // Modal itself usually doesn't need clone if we check target
+        editMisaModal.onclick = (e) => {
             if (e.target === editMisaModal) {
                 editMisaModal.classList.add("hidden");
             }
-        });
+        };
     }
 
     if (editMisaForm) {
-        editMisaForm.addEventListener("submit", async (e) => {
+        // Clone form to remove existing listeners
+        const newEditMisaForm = editMisaForm.cloneNode(true);
+        editMisaForm.parentNode?.replaceChild(newEditMisaForm, editMisaForm);
+
+        newEditMisaForm.addEventListener("submit", async (e: Event) => {
             e.preventDefault();
-            const formData = new FormData(editMisaForm);
+            const targetForm = e.target as HTMLFormElement;
+            const formData = new FormData(targetForm);
             const title = formData.get("title")?.toString() || "";
             const dateMisa = formData.get("dateMisa")?.toString() || "";
             const visibility = formData.get("visibility")?.toString() || "";
-            const misaId = editMisaForm.getAttribute("data-misa-id");
+            const misaId = targetForm.getAttribute("data-misa-id");
 
             const token = document
                 .querySelector("main")
@@ -257,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (token || editToken) {
                 // Loading button state
-                const submitBtn = editMisaForm.querySelector(
+                const submitBtn = targetForm.querySelector(
                     "button[type='submit']",
                 );
                 const originalText = submitBtn
@@ -315,7 +350,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const deleteMisaBtn = document.getElementById("deleteMisaBtn");
     if (deleteMisaBtn) {
-        deleteMisaBtn.addEventListener("click", async () => {
+        // Clone button
+        const newDeleteMisaBtn = deleteMisaBtn.cloneNode(true);
+        deleteMisaBtn.parentNode?.replaceChild(newDeleteMisaBtn, deleteMisaBtn);
+
+        newDeleteMisaBtn.addEventListener("click", async () => {
             const editMisaForm = document.getElementById(
                 "editMisaForm",
             ) as HTMLFormElement;
@@ -355,4 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-});
+};
+
+document.addEventListener("DOMContentLoaded", initMisaDetails);
+document.addEventListener("astro:page-load", initMisaDetails);
