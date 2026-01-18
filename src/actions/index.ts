@@ -11,6 +11,7 @@ export const server = {
         }),
         handler: async ({ id }, context) => {
             const token = context.cookies.get("token")?.value;
+            console.log("Action deleteSong - Token from cookie:", token ? "FOUND" : "MISSING");
 
             if (!token) {
                 throw new ActionError({
@@ -101,6 +102,7 @@ export const server = {
                 if (response && response.ok) {
                     // Forward cookies from backend to client
                     const setCookie = response.headers.get("set-cookie");
+                    console.log("Action login - response set-cookie header:", setCookie);
 
                     if (setCookie) {
                         const match = setCookie.match(/token=([^;]+)/);
@@ -121,10 +123,12 @@ export const server = {
                         try {
                             const responseBody = await responseClone.json();
                             if (responseBody.token) {
+                                console.log("Action login - Token found in body, setting cookie");
+                                console.log("Action login - IS PROD:", import.meta.env.PROD);
                                 context.cookies.set("token", responseBody.token, {
                                     path: "/",
                                     httpOnly: true,
-                                    secure: import.meta.env.PROD,
+                                    secure: false, // Force false for debugging
                                     sameSite: "lax",
                                 });
                                 return { success: true };

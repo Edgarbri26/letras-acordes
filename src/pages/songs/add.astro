@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import "@/styles/global.css";
 import type { Category } from "@/types/category";
 import { createSong, API_URL } from "@/services/songs";
+import AiAutocompleteButton from "@/components/Ui/AiAutocompleteButton.astro";
 
 import { getUserFromToken, hasPermission } from "@/utils/auth";
 
@@ -198,14 +199,12 @@ if (Astro.request.method === "POST") {
                             >
                                 <span>🔍</span> Autocompletar canción
                             </button>
-                            <button
-                                type="button"
-                                id="btn-ai-autocomplete"
-                                title="Completar acordes con IA"
+                            <AiAutocompleteButton
+                                token={token}
+                                apiUrl={API_URL}
                                 class="flex items-center gap-2 bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
-                            >
-                                <span>✨</span> Generar acordes con IA
-                            </button>
+                                showIconOnly={false}
+                            />
                         </div>
                     </div>
 
@@ -337,10 +336,13 @@ if (Astro.request.method === "POST") {
             });
         };
 
-        console.log("Script starting in add.astro");
-
-        document.addEventListener("DOMContentLoaded", () => {
+        const initAddSongPage = () => {
+            console.log("Initializing Add Song Page script");
             const dataElement = document.getElementById("add-song-data");
+
+            // If we are not on the add song page, add-song-data might not exist
+            if (!dataElement) return;
+
             const API_URL = dataElement?.dataset.apiUrl;
             const errorMessage = dataElement?.dataset.errorMessage;
             const token = dataElement?.dataset.token;
@@ -369,15 +371,19 @@ if (Astro.request.method === "POST") {
             ) as HTMLSelectElement | null;
             const closeCategoryBtn = document.querySelector(
                 "#modal-category button[value='cancel']",
-            );
+            ) as HTMLButtonElement | null;
 
-            console.log("btnNewCategory:", btnNewCategory);
-            console.log("modalCategory:", modalCategory);
+            // Helper to remove listeners (cloning)
+            const replaceWithClone = (element: Element): Element => {
+                const newElement = element.cloneNode(true) as Element;
+                element.parentNode?.replaceChild(newElement, element);
+                return newElement;
+            };
 
             if (btnNewCategory && modalCategory) {
-                console.log("Adding click listener to btnNewCategory");
-                btnNewCategory.addEventListener("click", (e) => {
-                    console.log("btnNewCategory clicked");
+                const newBtnNewCategory = replaceWithClone(btnNewCategory);
+
+                newBtnNewCategory.addEventListener("click", (e) => {
                     e.preventDefault();
                     modalCategory.showModal();
                     if (inputCatName) {
@@ -385,28 +391,27 @@ if (Astro.request.method === "POST") {
                         inputCatName.focus();
                     }
                 });
-            } else {
-                console.error("Elements not found:", {
-                    btnNewCategory,
-                    modalCategory,
-                });
             }
 
             if (closeCategoryBtn && modalCategory) {
-                closeCategoryBtn.addEventListener("click", (e) => {
+                const newCloseCategoryBtn = replaceWithClone(closeCategoryBtn);
+                newCloseCategoryBtn.addEventListener("click", (e) => {
                     e.preventDefault();
                     modalCategory.close();
                 });
             }
 
             if (btnSaveCategory) {
-                btnSaveCategory.addEventListener("click", async () => {
+                const newBtnSaveCategory = replaceWithClone(
+                    btnSaveCategory,
+                ) as HTMLButtonElement;
+                newBtnSaveCategory.addEventListener("click", async () => {
                     const name = inputCatName?.value.trim();
                     if (!name) return;
 
                     try {
-                        btnSaveCategory.disabled = true;
-                        btnSaveCategory.textContent = "Guardando...";
+                        newBtnSaveCategory.disabled = true;
+                        newBtnSaveCategory.textContent = "Guardando...";
 
                         if (!API_URL) throw new Error("API URL not found");
 
@@ -444,166 +449,53 @@ if (Astro.request.method === "POST") {
                         console.error(e);
                         console.error("Error de conexión");
                     } finally {
-                        btnSaveCategory.disabled = false;
-                        btnSaveCategory.textContent = "Guardar";
+                        newBtnSaveCategory.disabled = false;
+                        newBtnSaveCategory.textContent = "Guardar";
                     }
                 });
             }
 
             // --- Main Form Logic ---
-            const mainForm = document.querySelector("main form");
-            const mainSubmitBtn = mainForm?.querySelector(
-                "button[type='submit']",
-            );
+            const mainForm = document.querySelector(
+                "main form",
+            ) as HTMLFormElement | null;
 
             if (mainForm) {
-                mainForm.addEventListener("submit", () => {
-                    if (mainSubmitBtn) {
-                        mainSubmitBtn.setAttribute("disabled", "true");
-                        mainSubmitBtn.innerHTML = "Guardando...";
-                        mainSubmitBtn.classList.add(
-                            "opacity-75",
-                            "cursor-not-allowed",
+                // Not cloning form to keep reacting with ChordEditor probably?
+                // Actually ChordEditor is outside the form or handled by React...
+                // Wait, ChordEditor contains hidden input named "content".
+                // Cloning the form might break React mounting if it was inside, but ChordEditor is distinct.
+                // However, attaching a submit listener multiple times is bad.
+                // Let's use a flag.
+                if (!mainForm.dataset.listenerAttached) {
+                    mainForm.addEventListener("submit", () => {
+                        const mainSubmitBtn = mainForm.querySelector(
+                            "button[type='submit']",
                         );
-                    }
-                });
-            }
-
-            // --- AI Autocomplete Logic ---
-            const btnAI = document.getElementById(
-                "btn-ai-autocomplete",
-            ) as HTMLButtonElement | null;
-            console.log("Searching for AI button...", btnAI);
-
-            if (btnAI) {
-                btnAI.addEventListener("click", async () => {
-                    console.log("AI Button Clicked");
-                    const titleInput = document.querySelector(
-                        "#title",
-                    ) as HTMLInputElement | null;
-                    const keySelect = document.querySelector(
-                        "#key",
-                    ) as HTMLSelectElement | null;
-                    const contentInput = document.querySelector(
-                        '[name="content"]',
-                    ) as HTMLInputElement | HTMLTextAreaElement | null;
-
-                    console.log("Inputs found:", {
-                        title: !!titleInput,
-                        key: !!keySelect,
-                        content: !!contentInput,
+                        if (mainSubmitBtn) {
+                            mainSubmitBtn.setAttribute("disabled", "true");
+                            mainSubmitBtn.innerHTML = "Guardando...";
+                            mainSubmitBtn.classList.add(
+                                "opacity-75",
+                                "cursor-not-allowed",
+                            );
+                        }
                     });
-
-                    const title = titleInput?.value || "";
-                    const key = keySelect?.value || "";
-                    const content = contentInput?.value || "";
-
-                    if (!title || !key || !content) {
-                        console.error("Datos incompletos");
-                        await showError(
-                            "Datos incompletos",
-                            "Por favor completa el título, tono y letra antes de generar acordes.",
-                        );
-                        return;
-                    }
-
-                    // Confirmar con el usuario
-                    const confirmResult = await showConfirm(
-                        "¿Generar acordes con IA?",
-                        "Esto agregará acordes a la letra actual. El contenido del editor será reemplazado con la versión que incluye acordes.",
-                        "Sí, generar",
-                        "Cancelar",
-                    );
-
-                    if (!confirmResult.isConfirmed) return;
-
-                    console.log("--- AI Autocomplete Context ---");
-                    console.log("Title:", title);
-                    console.log("Key:", key);
-                    console.log("Content:", content);
-                    console.log("-------------------------------");
-
-                    try {
-                        // Mostrar indicador de carga
-                        showLoading("Generando acordes con IA...");
-
-                        // Deshabilitar botón
-                        btnAI.disabled = true;
-                        btnAI.classList.add("opacity-75", "cursor-not-allowed");
-
-                        // Importar dinámicamente el servicio de IA
-                        const { autocompleteChordsWithAI } =
-                            await import("../../services/ai.ts");
-
-                        // Llamar al servicio para autocompletar acordes
-                        const result = await autocompleteChordsWithAI(
-                            {
-                                title: title,
-                                tone: key,
-                                lyrics: content,
-                            },
-                            token,
-                            API_URL,
-                        );
-
-                        if (!result.success) {
-                            throw new Error(
-                                result.error || "Error al generar acordes",
-                            );
-                        }
-
-                        const data = result.data;
-                        console.log("AI Response:", data);
-
-                        if (data && data.chordPro) {
-                            // Disparar evento personalizado para que React actualice el editor
-                            window.dispatchEvent(
-                                new CustomEvent("update-editor-content", {
-                                    detail: { content: data.chordPro },
-                                }),
-                            );
-
-                            // Cerrar loading y mostrar éxito
-                            const chordsList =
-                                data.chords?.list?.join(", ") || "N/A";
-                            await showSuccessToast(
-                                "¡Acordes generados!",
-                                `${data.chords?.count || 0} acordes únicos: ${chordsList}`,
-                                5000,
-                            );
-                        } else {
-                            throw new Error("Respuesta inválida del servidor");
-                        }
-                    } catch (error) {
-                        console.error("Error al generar acordes:", error);
-                        const errorMsg =
-                            error instanceof Error
-                                ? error.message
-                                : "Error desconocido";
-                        await showError(
-                            "Error al generar acordes",
-                            `${errorMsg}\n\nPor favor intenta nuevamente. Si el problema persiste, verifica tu conexión a internet.`,
-                        );
-                    } finally {
-                        // Cerrar loading y restaurar botón
-                        Swal.close();
-                        btnAI.disabled = false;
-                        btnAI.classList.remove(
-                            "opacity-75",
-                            "cursor-not-allowed",
-                        );
-                    }
-                });
+                    mainForm.dataset.listenerAttached = "true";
+                }
             }
 
             // --- AI Search Song by Lyrics Logic ---
             const btnAISearch = document.getElementById(
                 "btn-ai-search-song",
             ) as HTMLButtonElement | null;
-            console.log("Searching for AI Search Song button...", btnAISearch);
 
             if (btnAISearch) {
-                btnAISearch.addEventListener("click", async () => {
+                const newBtnAISearch = replaceWithClone(
+                    btnAISearch,
+                ) as HTMLButtonElement;
+
+                newBtnAISearch.addEventListener("click", async () => {
                     console.log("AI Search Song Button Clicked");
                     const titleInput = document.querySelector(
                         "#title",
@@ -650,19 +542,13 @@ if (Astro.request.method === "POST") {
 
                     if (!confirmResult.isConfirmed) return;
 
-                    console.log("--- AI Search Song Context ---");
-                    console.log("Lyric Fragment:", lyricFragment);
-                    console.log("Title (hint):", title);
-                    console.log("Artist (hint):", artist);
-                    console.log("-------------------------------");
-
                     try {
                         // Mostrar indicador de carga
                         showLoading("Buscando canción...");
 
                         // Deshabilitar botón
-                        btnAISearch.disabled = true;
-                        btnAISearch.classList.add(
+                        newBtnAISearch.disabled = true;
+                        newBtnAISearch.classList.add(
                             "opacity-75",
                             "cursor-not-allowed",
                         );
@@ -776,8 +662,8 @@ if (Astro.request.method === "POST") {
                     } finally {
                         // Cerrar loading y restaurar botón
                         Swal.close();
-                        btnAISearch.disabled = false;
-                        btnAISearch.classList.remove(
+                        newBtnAISearch.disabled = false;
+                        newBtnAISearch.classList.remove(
                             "opacity-75",
                             "cursor-not-allowed",
                         );
@@ -790,24 +676,38 @@ if (Astro.request.method === "POST") {
                 "#key",
             ) as HTMLSelectElement | null;
 
-            keySelect?.addEventListener("change", (e) => {
-                if (e.target instanceof HTMLSelectElement) {
-                    const newKey = e.target.value;
+            if (keySelect) {
+                // Should we clone keySelect? Replacing it might break if something else holds a reference (unlikely)
+                // But let's clone to clear listeners
+                const newKeySelect = replaceWithClone(
+                    keySelect,
+                ) as HTMLSelectElement;
+                newKeySelect.addEventListener("change", (e) => {
+                    const target = e.target as HTMLSelectElement;
+                    const newKey = target.value;
                     const event = new CustomEvent("song-key-change", {
                         detail: { key: newKey },
                     });
                     window.dispatchEvent(event);
-                }
-            });
+                });
 
-            // Escuchar cambios desde el editor de acordes
-            window.addEventListener("editor-key-change", (e) => {
-                if (e instanceof CustomEvent) {
-                    if (keySelect && e.detail && e.detail.key) {
-                        keySelect.value = e.detail.key;
+                // Escuchar cambios desde el editor de acordes
+                window.addEventListener("editor-key-change", (e) => {
+                    if (e instanceof CustomEvent) {
+                        // Need to re-query active keySelect because replaceWithClone might have created a new one
+                        const currentKeySelect = document.querySelector(
+                            "#key",
+                        ) as HTMLSelectElement | null;
+                        if (currentKeySelect && e.detail && e.detail.key) {
+                            currentKeySelect.value = e.detail.key;
+                        }
                     }
-                }
-            });
-        });
+                });
+            }
+        };
+
+        // Attach to both events
+        document.addEventListener("DOMContentLoaded", initAddSongPage);
+        document.addEventListener("astro:page-load", initAddSongPage);
     </script>
 </Layout>

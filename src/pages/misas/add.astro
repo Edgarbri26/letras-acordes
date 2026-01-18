@@ -98,7 +98,17 @@ const token = Astro.cookies.get("token")?.value;
         const visibility = formData.get("visibility") as string;
         const token = form.getAttribute("data-token");
 
+        console.log("add.astro - Form submitted", {
+            title,
+            dateMisa,
+            visibility,
+            token: token ? "FOUND" : "MISSING",
+        });
+
         if (!token) {
+            console.error(
+                "add.astro - Token missing in form attribute data-token",
+            );
             await showError(
                 "Error",
                 "No estás autenticado. Por favor inicia sesión.",
@@ -119,6 +129,7 @@ const token = Astro.cookies.get("token")?.value;
         `;
 
         try {
+            console.log("add.astro - calling createMisa service");
             const { success, error } = await createMisa(
                 title,
                 dateMisa,

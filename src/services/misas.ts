@@ -21,10 +21,13 @@ export const getMisas = async (token?: string): Promise<ServiceResponse<Misa[]>>
 
 export const createMisa = async (title: string, dateMisa: string, visibility: string = "PUBLIC", token?: string): Promise<ServiceResponse<Misa>> => {
     try {
+        console.log("createMisa called with:", { title, dateMisa, visibility, tokenExists: !!token });
         const headers: HeadersInit = { "Content-Type": "application/json" };
         if (token) {
             headers["Authorization"] = `Bearer ${token}`;
         }
+
+        console.log("createMisa headers:", headers);
 
         const res = await fetch(`${API_URL}/misas`, {
             method: "POST",
@@ -33,7 +36,8 @@ export const createMisa = async (title: string, dateMisa: string, visibility: st
         });
 
         if (!res.ok) {
-            const errData = await res.json();
+            const errData = await res.json().catch(e => "Flux failed to parse error json");
+            console.error("createMisa failed:", res.status, res.statusText, errData);
             return { success: false, error: "Error al crear la misa.", data: errData };
         }
 

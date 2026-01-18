@@ -1,0 +1,145 @@
+---
+interface Props {
+    titleElementId?: string;
+    keyElementId?: string;
+    contentElementName?: string;
+    token?: string;
+    apiUrl?: string;
+    class?: string;
+    showIconOnly?: boolean;
+}
+
+const {
+    titleElementId = "title",
+    keyElementId = "key",
+    contentElementName = "content",
+    token,
+    apiUrl,
+    class: className,
+    showIconOnly = false,
+} = Astro.props;
+---
+
+<button
+    type="button"
+    id="btn-ai-autocomplete"
+    class:list={[
+        "text-xs bg-linear-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold py-1.5 px-3 rounded-md transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 border border-white/10",
+        className,
+    ]}
+    title="Generar acordes con Inteligencia Artificial"
+    data-title-id={titleElementId}
+    data-key-id={keyElementId}
+    data-content-name={contentElementName}
+    data-token={token}
+    data-api-url={apiUrl}
+>
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+    {!showIconOnly && <span class="hidden md:inline">Generar Acordes IA</span>}
+</button>
+
+<script>
+    import {
+        showConfirm,
+        showLoading,
+        showSuccessToast,
+        showError,
+    } from "@/utils/alerts";
+    import Swal from "sweetalert2";
+
+    const btnAI = document.getElementById(
+        "btn-ai-autocomplete",
+    ) as HTMLButtonElement | null;
+
+    if (btnAI) {
+        btnAI.addEventListener("click", async () => {
+            const titleId = btnAI.dataset.titleId || "title";
+            const keyId = btnAI.dataset.keyId || "key";
+            const contentName = btnAI.dataset.contentName || "content";
+            const token = btnAI.dataset.token;
+            const API_URL = btnAI.dataset.apiUrl;
+
+            const titleInput = document.getElementById(
+                titleId,
+            ) as HTMLInputElement;
+            const keySelect = document.getElementById(
+                keyId,
+            ) as HTMLSelectElement;
+            const contentInput = document.querySelector(
+                `[name="${contentName}"]`,
+            ) as HTMLInputElement | HTMLTextAreaElement | null;
+
+            const title = titleInput?.value || "";
+            // Si el keySelect es un componente custom o select normal, value suele funcionar.
+            const key = keySelect?.value || "";
+            const content = contentInput?.value || "";
+
+            if (!title || !key || !content) {
+                await showError(
+                    "Datos incompletos",
+                    "Asegúrate de tener título, tono y letra cargada.",
+                );
+                return;
+            }
+
+            const confirmResult = await showConfirm(
+                "¿Generar acordes con IA?",
+                "Se reemplazarán los acordes actuales. Se recomienda guardar antes si tienes cambios sin salvar.",
+                "Sí, generar",
+                "Cancelar",
+            );
+
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                showLoading("Generando acordes con IA...");
+                btnAI.setAttribute("disabled", "true");
+                btnAI.classList.add("opacity-50", "cursor-not-allowed");
+
+                if (!API_URL)
+                    throw new Error("API URL no configurada en el componente");
+
+                // Importar dinámicamente el servicio
+                const { autocompleteChordsWithAI } =
+                    await import("@/services/ai");
+
+                const result = await autocompleteChordsWithAI(
+                    {
+                        title: title,
+                        tone: key,
+                        lyrics: content,
+                    },
+                    token,
+                    API_URL,
+                );
+
+                if (!result.success) {
+                    throw new Error(result.error || "Error al generar");
+                }
+
+                const data = result.data;
+                if (data && data.chordPro) {
+                    // Update Editor via Event
+                    window.dispatchEvent(
+                        new CustomEvent("update-editor-content", {
+                            detail: { content: data.chordPro },
+                        }),
+                    );
+
+                    await showSuccessToast(
+                        "¡Acordes generados!",
+                        `Se agregaron acordes a la canción.`,
+                        3000,
+                    );
+                }
+            } catch (error: any) {
+                console.error(error);
+                await showError("Error", error.message || "Error desconocido");
+            } finally {
+                Swal.close();
+                btnAI.removeAttribute("disabled");
+                btnAI.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        });
+    }
+</script>

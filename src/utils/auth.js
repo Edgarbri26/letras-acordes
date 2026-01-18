@@ -1,6 +1,7 @@
 export const getUserFromToken = (token) => {
     if (!token) return null;
     try {
+        console.log("getUserFromToken - Token received (first 10 chars):", token.substring(0, 10));
         const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
         return payload;
     } catch (e) {
