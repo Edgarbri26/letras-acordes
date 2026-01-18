@@ -83,7 +83,6 @@ const token = Astro.cookies.get("token")?.value;
 
 <script>
     import { createMisa } from "@/services/misas";
-    import { actions } from "astro:actions";
     import { showError, showSuccessToast } from "@/utils/alerts";
 
     const form = document.getElementById("addMisaForm") as HTMLFormElement;
@@ -130,19 +129,20 @@ const token = Astro.cookies.get("token")?.value;
         `;
 
         try {
-            console.log("add.astro - calling createMisa ACTION");
-            const { data, error } = await actions.createMisa({
+            console.log("add.astro - calling createMisa service");
+            const { success, error } = await createMisa(
                 title,
                 dateMisa,
-                visibility: visibility as "PUBLIC" | "PRIVATE",
-            });
+                visibility,
+                token,
+            );
 
-            if (!error && data?.success) {
+            if (success) {
                 await showSuccessToast("Misa creada correctamente");
                 window.location.href = "/misas";
             } else {
-                console.error("Action error:", error);
-                showError("Error", error?.message || "Error al crear la misa");
+                console.error("Service error:", error);
+                showError("Error", error || "Error al crear la misa");
                 // Restore button
                 submitBtn.disabled = false;
                 submitBtn.innerText = originalText;
