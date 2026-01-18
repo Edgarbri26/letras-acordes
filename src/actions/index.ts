@@ -159,4 +159,61 @@ export const server = {
             }
         },
     }),
+    createMisa: defineAction({
+        accept: "json",
+        input: z.object({
+            title: z.string().min(1),
+            dateMisa: z.string(),
+            visibility: z.enum(["PUBLIC", "PRIVATE"]).default("PUBLIC"),
+        }),
+        handler: async ({ title, dateMisa, visibility }, context) => {
+            const token = context.cookies.get("token")?.value;
+
+            if (!token) {
+                throw new ActionError({
+                    code: "UNAUTHORIZED",
+                    message: "No autorizado",
+                });
+            }
+
+            const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+            if (authError || !user) {
+                throw new ActionError({
+                    code: "UNAUTHORIZED",
+                    message: "Sesión inválida",
+                });
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from("misas")
+                    .insert({
+                        title,
+                        date: dateMisa, // Assuming the DB column is 'date'
+                        visibility,
+                        id_user: user.id
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error("Supabase insert error:", error);
+                    throw new ActionError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "Error al crear la misa en base de datos",
+                    });
+                }
+
+                return { success: true, data };
+            } catch (e) {
+                if (e instanceof ActionError) throw e;
+                console.error("Exception creating misa:", e);
+                throw new ActionError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Error interno del servidor",
+                });
+            }
+        },
+    }),
 };
