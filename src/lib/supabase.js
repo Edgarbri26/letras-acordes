@@ -20,7 +20,15 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
         },
         from: () => ({
             select: () => ({ eq: () => Promise.resolve({ data: [], error: null }) }),
-            insert: () => Promise.resolve({ error: { message: "Servicio no disponible" } }),
+            insert: () => {
+                const response = Promise.resolve({ error: { message: "Servicio no disponible" }, data: null });
+                return {
+                    select: () => ({
+                        single: () => response
+                    }),
+                    then: (onfulfilled) => response.then(onfulfilled)
+                };
+            },
             update: () => ({ eq: () => Promise.resolve({ error: { message: "Servicio no disponible" } }) }),
             delete: () => ({ eq: () => Promise.resolve({ error: { message: "Servicio no disponible" } }) })
         })

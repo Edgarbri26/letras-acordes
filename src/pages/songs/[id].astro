@@ -2,63 +2,30 @@
 // export const prerender = false;
 Astro.response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60");
 import Layout from "@/layouts/Layout.astro";
-import HeaderLyric from "@/components/HeaderLyric.astro";
-import SongView from "@/components/SongView.jsx";
-import SongTools from "@/components/SongTools.astro";
-import YouTubePlayer from "@/components/YouTubePlayer.astro";
+import SongContainer from "@/components/SongContainer.jsx";
+import "../../styles/global.css";
 import type { Song } from "@/types/song";
 import "../../styles/global.css";
-import { API_URL } from "@/services/songs";
-
-let song: Song | null = null;
 const { id } = Astro.params;
 
 if (!id) {
     return Astro.redirect("/");
 }
 
-let error = null;
+// SEO optimization: fetch minimal data or just render shell?
+// If the user wants "dynamic island" to avoid blocking, we probably skip server fetch mainly.
+// But for SEO, we usually WANT server fetch.
+// The user request "que esas peticiones las hagas dentro de un componente de react... para que no haga que duren al moverse entre paginas" imply they prioritize SPEED over SEO or Server Rendering for this part.
+// So I will remove the server fetch mostly.
+// However, Layout needs title/description.
+// I'll set default title or use client-side update (React Helmet)? Astro Layout is static.
+// I will keep a skeleton/default title.
 
-try {
-    const res = await fetch(`${API_URL}/songs/${id}`);
-    if (!res.ok) {
-        if (res.status === 404) return Astro.redirect("/");
-        throw new Error("Failed to fetch song");
-    }
-    song = await res.json();
-} catch (e) {
-    console.error("Error fetching song:", e);
-    return Astro.redirect("/");
-}
-const toneParam = Astro.url.searchParams.get("tone");
-const displayTone = toneParam || song?.key;
-
-const seoTitle = `${song?.title} - ${song?.artist} | Letra y Acordes`;
-const seoDescription = `Letra, acordes y música de ${song?.title} por ${song?.artist}. Aprende a tocar esta canción con nuestras tablaturas y herramientas de transposición.`;
-
-const schema = {
-    "@context": "https://schema.org",
-    "@type": "MusicComposition",
-    name: song?.title,
-    composer: {
-        "@type": "Person",
-        name: song?.artist,
-    },
-    lyricist: {
-        "@type": "Person",
-        name: song?.artist,
-    },
-    inLanguage: "es",
-    category: song?.category?.name,
-};
+const seoTitle = "Cargando... | Letra y Acordes";
+const seoDescription = "Cargando canción...";
 ---
 
 <Layout title={seoTitle} description={seoDescription}>
-    <script
-        type="application/ld+json"
-        slot="head"
-        set:html={JSON.stringify(schema)}
-    />
     <div
         class="print-header flex items-center gap-4 mb-2 pb-2 border-b border-gray-300"
     >
@@ -69,9 +36,8 @@ const schema = {
         />
         <div class="flex-1">
             <h1 class="text-3xl font-bold text-black leading-tight">
-                {song?.title}
+                Cargando...
             </h1>
-            <p class="text-gray-600 text-sm">{song?.artist}</p>
         </div>
         <div class="text-right">
             <p class="text-gray-400 text-xs">Cancionero Digital</p>
@@ -81,35 +47,10 @@ const schema = {
     <div
         class="flex flex-col h-full bg-bg-main text-text-main print:bg-white print:text-black"
     >
-        <div class="flex flex-1 max-w-[1400px] mx-auto w-full print:block">
-            <SongTools id={id} />
-
-            <main class="flex-1 p-6 md:p-10 min-w-0 print:px-8 print:py-0">
-                <HeaderLyric
-                    title={song?.title}
-                    artist={song?.artist}
-                    tone={displayTone}
-                    category={song?.category}
-                    user={song?.user}
-                    id={id}
-                />
-
-                <div
-                    class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start print:block"
-                >
-                    <div class="lg:col-span-2 print:w-full">
-                        <SongView
-                            client:load
-                            initialContent={song?.content}
-                            initialKey={displayTone}
-                            originalKey={song?.key}
-                        />
-                    </div>
-                    <div class="lg:col-span-1 no-print">
-                        <YouTubePlayer url={song?.url_song} />
-                    </div>
-                </div>
-            </main>
-        </div>
+        <SongContainer
+            client:only="react"
+            id={id}
+            token={Astro.cookies.get("token")?.value}
+        />
     </div>
 </Layout>
