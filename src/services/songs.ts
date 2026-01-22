@@ -100,6 +100,21 @@ export const searchSongs = async (query: string, categoryId: string = ""): Promi
     }
 };
 
+export const getSongById = async (id: string | number): Promise<ServiceResponse<Song>> => {
+    try {
+        const res = await fetch(`${API_URL}/songs/${id}`);
+        if (!res.ok) {
+            return { success: false, error: "Error al obtener la canción." };
+        }
+        const data = await res.json();
+        return { success: true, data };
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: "Error de conexión." };
+    }
+};
+
+
 export const deleteSongById = async (id: number | string, token: string | undefined): Promise<ServiceResponse> => {
     try {
         const headers: HeadersInit = {};

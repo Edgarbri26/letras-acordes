@@ -12,6 +12,9 @@ if (!token) {
     return Astro.redirect("/login");
 }
 import "../styles/global.css";
+// Fonts
+import "@fontsource/outfit";
+import "@fontsource/jetbrains-mono";
 
 // In a real app we would verify the JWT and check admin role here
 // For now relying on API to block data
@@ -32,17 +35,38 @@ import "../styles/global.css";
         />
     </head>
     <body
-        class="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-100 flex"
+        class="bg-bg-main min-h-screen text-text-main flex font-sans overflow-x-hidden"
     >
+        <!-- Mobile Header -->
+        <div
+            class="fixed top-0 left-0 w-full h-16 bg-bg-secondary border-b border-white/10 flex items-center justify-between px-4 z-40 md:hidden"
+        >
+            <h1 class="text-xl font-bold text-accent-main">AdminPanel</h1>
+            <button
+                id="mobile-menu-btn"
+                class="text-text-main p-2 hover:bg-white/5 rounded-lg"
+            >
+                <i class="fa-solid fa-bars text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Overlay -->
+        <div
+            id="sidebar-overlay"
+            class="fixed inset-0 bg-black/50 z-40 hidden md:hidden glass-dark"
+        >
+        </div>
+
         <!-- Sidebar -->
         <aside
-            class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen flex flex-col fixed h-full z-10"
+            id="sidebar"
+            class="fixed top-0 left-0 h-full w-64 bg-bg-secondary border-r border-white/10 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-50 flex flex-col pt-16 md:pt-0"
         >
             <div
-                class="h-16 flex items-center justify-center border-b border-gray-200 dark:border-gray-700"
+                class="h-16 hidden md:flex items-center justify-center border-b border-white/10"
             >
                 <h1
-                    class="text-xl font-bold bg-gradient-to-r from-accent-main to-accent-secondary bg-clip-text text-transparent"
+                    class="text-xl font-bold bg-linear-to-r from-accent-main to-accent-secondary bg-clip-text text-transparent"
                 >
                     AdminPanel
                 </h1>
@@ -51,13 +75,24 @@ import "../styles/global.css";
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
                 <a
                     href="/admin/users"
-                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg ${Astro.url.pathname.includes("/admin/users") ? "bg-accent-main/10 text-accent-main" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        Astro.url.pathname.includes("/admin/users")
+                            ? "bg-accent-main/10 text-accent-main border border-accent-main/20"
+                            : "text-text-secondary hover:bg-white/5 hover:text-white"
+                    }`}
                 >
-                    Users
+                    <i
+                        class="fa-solid fa-users h-5 w-5 flex items-center justify-center"
+                    ></i>
+                    Usuarios
                 </a>
                 <a
                     href="/admin/songs"
-                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg ${Astro.url.pathname.includes("/admin/songs") ? "bg-accent-main/10 text-accent-main" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        Astro.url.pathname.includes("/admin/songs")
+                            ? "bg-accent-main/10 text-accent-main border border-accent-main/20"
+                            : "text-text-secondary hover:bg-white/5 hover:text-white"
+                    }`}
                 >
                     <i
                         class="fa-solid fa-music h-5 w-5 flex items-center justify-center"
@@ -66,44 +101,78 @@ import "../styles/global.css";
                 </a>
                 <a
                     href="/admin/roles"
-                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg ${Astro.url.pathname.includes("/admin/roles") ? "bg-accent-main/10 text-accent-main" : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                    class={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        Astro.url.pathname.includes("/admin/roles")
+                            ? "bg-accent-main/10 text-accent-main border border-accent-main/20"
+                            : "text-text-secondary hover:bg-white/5 hover:text-white"
+                    }`}
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-                        ></path>
-                    </svg>
+                    <i
+                        class="fa-solid fa-shield-halved h-5 w-5 flex items-center justify-center"
+                    ></i>
                     Gestión de Roles
                 </a>
-                <a
-                    href="/"
-                    class="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 mt-4"
-                >
-                    ← Back to App
-                </a>
+
+                <div class="pt-4 mt-4 border-t border-white/10">
+                    <a
+                        href="/"
+                        class="flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg text-text-secondary hover:bg-white/5 hover:text-white transition-colors"
+                    >
+                        <i
+                            class="fa-solid fa-arrow-left h-5 w-5 flex items-center justify-center"
+                        ></i>
+                        Volver a la App
+                    </a>
+                </div>
             </nav>
 
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="p-4 border-t border-white/10">
                 <a
                     href="/logout"
-                    class="block w-full text-center px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors"
-                    >Logout</a
+                    class="flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors"
                 >
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Logout
+                </a>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 ml-64 p-8">
+        <main class="flex-1 md:ml-64 p-4 md:p-8 pt-20 md:pt-8 min-w-0">
             <slot />
         </main>
+
+        <script>
+            // Mobile Menu Logic
+            const mobileMenuBtn = document.getElementById("mobile-menu-btn");
+            const sidebar = document.getElementById("sidebar");
+            const overlay = document.getElementById("sidebar-overlay");
+
+            function toggleMenu() {
+                const isClosed =
+                    sidebar?.classList.contains("-translate-x-full");
+
+                if (isClosed) {
+                    sidebar?.classList.remove("-translate-x-full");
+                    overlay?.classList.remove("hidden");
+                } else {
+                    sidebar?.classList.add("-translate-x-full");
+                    overlay?.classList.add("hidden");
+                }
+            }
+
+            mobileMenuBtn?.addEventListener("click", toggleMenu);
+            overlay?.addEventListener("click", toggleMenu);
+
+            // Close menu on route change (not strictly needed with standard nav but good to have)
+            const navLinks = sidebar?.querySelectorAll("a");
+            navLinks?.forEach((link) => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth < 768) {
+                        toggleMenu();
+                    }
+                });
+            });
+        </script>
     </body>
 </html>

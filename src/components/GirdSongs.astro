@@ -1,8 +1,0 @@
----
-const { songs } = Astro.props;
-import SongCard from "./SongCard.astro";
----
-
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {songs?.map((song: any) => <SongCard song={song} />)}
-</div>

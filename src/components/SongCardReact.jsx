@@ -1,0 +1,39 @@
+import React from 'react';
+
+const SongCardReact = ({ song }) => {
+    return (
+        <a href={`/songs/${song.id}`} className="block group">
+            <article className="bg-bg-secondary border border-white/5 rounded-xl p-5 hover:border-accent-main/50 transition-colors h-full">
+                <h2
+                    style={{ viewTransitionName: `song-title-${song.id}` }}
+                    className="text-xl font-bold text-white group-hover:text-accent-main transition-colors mb-1 truncate"
+                >
+                    {song.title}
+                </h2>
+                <p
+                    style={{ viewTransitionName: `song-artist-${song.id}` }}
+                    className="text-text-secondary text-sm mb-4"
+                >
+                    {song.artist}
+                </p>
+
+                <div className="flex items-center gap-2">
+                    <span
+                        style={{ viewTransitionName: `song-tone-${song.id}` }}
+                        className="text-xs bg-white/5 px-2 py-1 rounded text-text-secondary group-hover:bg-accent-main/10 group-hover:text-accent-main transition-colors"
+                    >
+                        Tom: {song.key}
+                    </span>
+                    <span
+                        style={{ viewTransitionName: `song-category-${song.id}` }}
+                        className="text-xs bg-white/5 px-2 py-1 rounded text-text-secondary group-hover:bg-accent-main/10 group-hover:text-accent-main transition-colors"
+                    >
+                        Categoría: {song.category?.name}
+                    </span>
+                </div>
+            </article>
+        </a>
+    );
+};
+
+export default SongCardReact;

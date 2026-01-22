@@ -191,3 +191,30 @@ export const updateMisaSong = async (misaId: number, misaSongId: number, key: st
         return { success: false, error: e instanceof Error ? e.message : "Error de conexión." };
     }
 };
+
+export const cloneMisa = async (originalMisa: Misa, token: string): Promise<ServiceResponse<Misa>> => {
+    try {
+        // 1. Create the new misa
+        const createRes = await createMisa(`${originalMisa.title} (Copia)`, new Date().toISOString(), "PRIVATE", token);
+
+        if (!createRes.success || !createRes.data) {
+            return { success: false, error: createRes.error || "Error al crear la copia de la misa." };
+        }
+
+        const newMisa = createRes.data;
+
+        // 2. Add songs to the new misa
+        // We run these sequentially to avoid overwhelming the server if there are many songs, 
+        // effectively simulating the user adding them one by one.
+        for (const song of originalMisa.misaSongs) {
+            const key = song.key || song.song.key || "C"; // Fallback key
+            await addSongToMisa(newMisa.id, song.songId, song.momentId, key, token);
+        }
+
+        return { success: true, data: newMisa };
+
+    } catch (e) {
+        console.error("Service exception:", e);
+        return { success: false, error: e instanceof Error ? e.message : "Error al clonar la misa." };
+    }
+};

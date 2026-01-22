@@ -2,12 +2,36 @@ import React, { useState, useEffect } from 'react';
 
 export const SongToolsReact = ({
     id,
-    onTranspose,
-    onToggleChords,
-    onPrint,
+    onTranspose = undefined,
+    onToggleChords = undefined,
+    onPrint = undefined,
     canEdit
 }) => {
-    const [isCollapsed, setIsCollapsed] = useState(() => window.innerWidth >= 768); // Defaults: Desktop=Collapsed(meaning Expanded UI but logic inverted in original?), Mobile=NotCollapsed
+    // Unused state removed to fix SSR error
+
+    // Wrapper handlers to support both Props (Container) and Events (Independent)
+    const handleTranspose = (amount) => {
+        if (onTranspose) {
+            onTranspose(amount);
+        } else {
+            // Dispatch event for other components (SongView)
+            if (typeof window !== 'undefined') {
+                const event = new CustomEvent('song-transpose', { detail: { semitones: amount } });
+                window.dispatchEvent(event);
+            }
+        }
+    };
+
+    const handleToggleChords = () => {
+        if (onToggleChords) {
+            onToggleChords();
+        } else {
+            if (typeof window !== 'undefined') {
+                const event = new CustomEvent('song-toggle-chords');
+                window.dispatchEvent(event);
+            }
+        }
+    };
 
     // Logic from Astro: 
     // Desktop: Default isCollapsed=true (Expanded UI). 
@@ -72,7 +96,7 @@ export const SongToolsReact = ({
             <div className={`flex flex-col items-center gap-4 mt-12 w-full transition-opacity duration-300 overflow-hidden ${(!isExpanded && isMobile) ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
                 <div className="flex flex-col gap-2 w-full px-2 items-center md:items-stretch">
                     <button
-                        onClick={() => onTranspose(1)}
+                        onClick={() => handleTranspose(1)}
                         className="flex items-center justify-center md:justify-start gap-3 p-2 text-text-secondary hover:text-accent-main transition font-bold rounded-lg hover:bg-white/5 w-full"
                         title="Subir Tono"
                     >
@@ -83,7 +107,7 @@ export const SongToolsReact = ({
                     <span className="text-xs text-text-secondary md:hidden mb-1">Tono</span>
 
                     <button
-                        onClick={() => onTranspose(-1)}
+                        onClick={() => handleTranspose(-1)}
                         className="flex items-center justify-center md:justify-start gap-3 p-2 text-text-secondary hover:text-accent-main transition font-bold rounded-lg hover:bg-white/5 w-full"
                         title="Bajar Tono"
                     >
@@ -95,7 +119,7 @@ export const SongToolsReact = ({
                 <div className="h-px w-8 bg-white/10 my-1"></div>
 
                 <button
-                    onClick={onToggleChords}
+                    onClick={handleToggleChords}
                     className="flex items-center justify-center md:justify-start gap-3 p-2 text-text-secondary hover:text-accent-main transition rounded-lg hover:bg-white/5 w-[calc(100%-1rem)]"
                     title="Alternar Acordes"
                 >
@@ -111,6 +135,35 @@ export const SongToolsReact = ({
                 >
                     <i className="fa-solid fa-download w-5 h-5 flex items-center justify-center"></i>
                     <span className={labelClasses}>Descargar</span>
+                </button>
+
+                <div className="h-px w-8 bg-white/10 my-1"></div>
+
+                <button
+                    onClick={async () => {
+                        if (navigator.share) {
+                            try {
+                                await navigator.share({
+                                    title: document.title,
+                                    url: window.location.href
+                                });
+                            } catch (err) {
+                                console.error('Error sharing:', err);
+                            }
+                        } else {
+                            try {
+                                await navigator.clipboard.writeText(window.location.href);
+                                alert('Enlace copiado al portapapeles');
+                            } catch (err) {
+                                console.error('Failed to copy:', err);
+                            }
+                        }
+                    }}
+                    className="flex items-center justify-center md:justify-start gap-3 p-2 text-text-secondary hover:text-accent-main transition rounded-lg hover:bg-white/5 w-[calc(100%-1rem)]"
+                    title="Compartir"
+                >
+                    <i className="fa-solid fa-share-nodes w-5 h-5 flex items-center justify-center"></i>
+                    <span className={labelClasses}>Compartir</span>
                 </button>
 
                 {canEdit && (

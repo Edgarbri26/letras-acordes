@@ -2,7 +2,7 @@
 // export const prerender = false;
 import Layout from "../../layouts/Layout.astro";
 import Header from "../../components/Header.astro";
-import { getMisas } from "../../services/misas";
+import { getMisas, cloneMisa } from "../../services/misas";
 import { getMoments } from "@/services/moments";
 import MisaSongManager from "@/components/MisaSongManager";
 import type { Moment } from "@/types/misa";
@@ -16,17 +16,43 @@ let moments: Moment[] = [];
 let token = Astro.cookies.get("token")?.value;
 let editToken = Astro.url.searchParams.get("edit_token");
 
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const action = formData.get("action");
+
+    if (action === "clone" && id && token) {
+        // We need to fetch the misa first to clone it
+        // Or we can rely on `cloneMisa` taking the full object if we had it.
+        // But here we are in the POST request, so 'misa' variable is not yet populated by the GET logic below.
+        // Ideally we should move the fetch logic up or re-fetch.
+        // Let's re-fetch for safety or refactor.
+
+        // Simpler: Fetch just for cloning
+        const headers: HeadersInit = { Authorization: `Bearer ${token}` };
+        const res = await fetch(`${API_URL}/misas/${id}`, { headers });
+        if (res.ok) {
+            const originalMisa = await res.json();
+            const result = await cloneMisa(originalMisa, token);
+            if (result.success && result.data) {
+                return Astro.redirect(`/misas/${result.data.id}`);
+            } else {
+                error = result.error || "Error al clonar la misa.";
+            }
+        } else {
+            error = "No se pudo obtener la misa original para clonar.";
+        }
+    }
+}
+
 if (id) {
     try {
         const headers: HeadersInit = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        // Check for share token in query params (client-side nav might pass it, but server-side initial load relies on cookies or URL param)
+        // Check for share token in query params
         const url = new URL(`${API_URL}/misas/${id}`);
-        // If there's a token query param in the current URL, pass it to the API
         const shareToken = Astro.url.searchParams.get("share_token");
         if (shareToken) url.searchParams.append("share_token", shareToken);
-
         if (editToken) url.searchParams.append("edit_token", editToken);
 
         const [misaRes, momentsRes] = await Promise.all([
@@ -36,7 +62,6 @@ if (id) {
 
         if (misaRes.ok) {
             misa = await misaRes.json();
-            // Fallback: If backend is stale (missing canEdit), trust isOwner.
             misa.canEdit = misa.canEdit || misa.isOwner;
         } else {
             error = "No se encontró la misa.";
@@ -92,7 +117,48 @@ const formatDate = (dateString: string) => {
                                     📅 {formatDate(misa.dateMisa)}
                                 </p>
                             </div>
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 items-center">
+                                {misa.visibility === "PUBLIC" &&
+                                    token &&
+                                    !misa.isOwner && (
+                                        <form method="POST">
+                                            <input
+                                                type="hidden"
+                                                name="action"
+                                                value="clone"
+                                            />
+                                            <button
+                                                type="submit"
+                                                class="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
+                                                title="Clonar esta misa para editarla"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    class="lucide lucide-copy"
+                                                >
+                                                    <rect
+                                                        width="14"
+                                                        height="14"
+                                                        x="8"
+                                                        y="8"
+                                                        rx="2"
+                                                        ry="2"
+                                                    />
+                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                                </svg>
+                                                Clonar
+                                            </button>
+                                        </form>
+                                    )}
+
                                 {misa.visibility === "PRIVATE" &&
                                     (misa.isOwner ||
                                         token ||
@@ -306,7 +372,8 @@ const formatDate = (dateString: string) => {
                             editToken={editToken}
                         />
                     ) : (
-                        !Astro.url.searchParams.has("share_token") && (
+                        !Astro.url.searchParams.has("share_token") &&
+                        misa.visibility !== "PUBLIC" && (
                             <div class="mt-8 text-center p-6 bg-gray-50 dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
                                 <p class="text-gray-600 dark:text-gray-400 mb-4">
                                     Inicia sesión para agregar canciones y

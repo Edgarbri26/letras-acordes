@@ -22,18 +22,19 @@ const getTransposedKey = (key, semitones) => {
     return NOTES[newIdx];
 };
 
-export default function SongContainer({ id, token }) {
-    const [song, setSong] = useState(null);
-    const [loading, setLoading] = useState(true);
+export default function SongContainer({ id, token, initialSong }) {
+    const [song, setSong] = useState(initialSong || null);
+    const [loading, setLoading] = useState(!initialSong);
     const [error, setError] = useState(null);
 
     // Playback state
-    const [currentKey, setCurrentKey] = useState('');
+    const [currentKey, setCurrentKey] = useState(initialSong?.key || '');
     const [transposeAmount, setTransposeAmount] = useState(0); // 0 = original
     const [showChords, setShowChords] = useState(true);
 
     useEffect(() => {
         const fetchSong = async () => {
+            setLoading(true);
             try {
                 const res = await fetch(`${API_URL}/songs/${id}`);
                 if (!res.ok) {
@@ -50,7 +51,7 @@ export default function SongContainer({ id, token }) {
             }
         };
 
-        if (id) {
+        if (id && (!song || song.id !== id)) {
             fetchSong();
         }
     }, [id]);
@@ -114,6 +115,7 @@ export default function SongContainer({ id, token }) {
 
             <main className="flex-1 p-6 md:p-10 min-w-0 print:px-8 print:py-0">
                 <HeaderLyricReact
+                    id={id}
                     title={song.title}
                     artist={song.artist}
                     tone={currentKey}

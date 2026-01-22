@@ -1,6 +1,9 @@
 ---
 // export const prerender = false;
-Astro.response.headers.set("Cache-Control", "public, max-age=60, s-maxage=60");
+Astro.response.headers.set(
+	"Cache-Control",
+	"no-cache, no-store, must-revalidate",
+);
 import Layout from "@/layouts/Layout.astro";
 import "../styles/global.css";
 
@@ -8,10 +11,11 @@ import type { Song } from "@/types/song";
 import type { Category } from "@/types/category";
 import { getUserFromToken } from "@/utils/auth";
 import { API_URL } from "@/services/songs";
-import GirdSongs from "@/components/GirdSongs.astro";
+import GridSongs from "@/components/GridSongs.jsx";
+import CategoryFilter from "@/components/CategoryFilter.jsx";
 
-let songs: Song[] = [];
-let categories: Category[] = [];
+// let songs: Song[] = []; // Removed server-side fetching
+// let categories: Category[] = []; // Removed server-side fetching
 interface Stats {
 	totalSongs: number;
 	totalCategories: number;
@@ -28,21 +32,6 @@ const headers: Record<string, string> = token
 const user = getUserFromToken(token);
 
 try {
-	// Fetch latest 10 songs
-	const res = await fetch(`${API_URL}/songs?limit=10`, { headers });
-	if (!res.ok) throw new Error("Failed to fetch songs");
-	songs = await res.json();
-	// Backend now returns ordered by desc
-
-	// Fetch categories
-	const catRes = await fetch(`${API_URL}/categories`, { headers });
-	if (catRes.ok) {
-		categories = await catRes.json();
-		if (user?.role === "ADMIN") {
-			categories.push({ id: -1, name: "Inactivas" } as any);
-		}
-	}
-
 	// Fetch stats
 	const statsRes = await fetch(`${API_URL}/stats`, { headers });
 	if (statsRes.ok) {
@@ -59,7 +48,7 @@ try {
 
 const seoTitle = "Cancionero Digital | Letras y Acordes Cristianos";
 const seoDescription =
-	"El mejor cancionero virtual para músicos cristianos. Encuentra letras, acordes y herramientas de transposición para tu ministerio de alabanza.";
+	"Mi canciónero el mejor cancionero digital para músicos católicos. Encuentra letras, acordes y herramientas de transposición para tu ministerio de música. Ademas crear tus misas con tus canciones favoritas.";
 
 const schema = {
 	"@context": "https://schema.org",
@@ -138,48 +127,9 @@ const schema = {
 					</a>
 				</div>
 
-				<!-- Categorías Quick Filter -->
-				<div class="flex flex-wrap gap-2 mb-8">
-					<a
-						href="/search/all"
-						class="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-bg-secondary text-text-secondary hover:text-white hover:bg-white/10"
-						data-astro-prefetch
-					>
-						Explorar Todas
-					</a>
-					{
-						categories.map((cat) => (
-							<a
-								href={
-									cat.id === -1
-										? `/search/all?active=false`
-										: `/search/all?categoryId=${cat.id}`
-								}
-								class={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${cat.id === -1 ? "bg-red-900/30 text-red-200 border border-red-500/30 hover:bg-red-900/50" : "bg-bg-secondary text-text-secondary hover:text-white hover:bg-white/10"}`}
-								data-astro-prefetch
-							>
-								{cat.name}
-							</a>
-						))
-					}
-				</div>
+				<CategoryFilter client:load isAdmin={user?.role === "ADMIN"} />
 
-				<GirdSongs songs={songs} />
-
-				{
-					(!songs || songs.length === 0) && (
-						<div class="text-center py-20 opacity-50">
-							<p class="text-xl mb-4">No hay canciones todavía</p>
-							<a
-								href="/add-song"
-								class="text-accent-main hover:underline"
-								data-astro-prefetch
-							>
-								¡Sube la primera!
-							</a>
-						</div>
-					)
-				}
+				<GridSongs client:load />
 			</section>
 		</main>
 	</div>
