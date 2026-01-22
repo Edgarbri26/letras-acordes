@@ -13,6 +13,7 @@ import { getUserFromToken } from "@/utils/auth";
 import { API_URL } from "@/services/songs";
 import GridSongs from "@/components/GridSongs.jsx";
 import CategoryFilter from "@/components/CategoryFilter.jsx";
+import DashboardStats from "@/components/DashboardStats.jsx";
 
 // let songs: Song[] = []; // Removed server-side fetching
 // let categories: Category[] = []; // Removed server-side fetching
@@ -31,20 +32,20 @@ const headers: Record<string, string> = token
 
 const user = getUserFromToken(token);
 
-try {
-	// Fetch stats
-	const statsRes = await fetch(`${API_URL}/stats`, { headers });
-	if (statsRes.ok) {
-		stats = await statsRes.json();
-	}
-} catch (e) {
-	if (e instanceof Error) {
-		error = e.message;
-	} else {
-		error = String(e);
-		console.error("Error fetching songs:", error);
-	}
-}
+// try {
+// 	// Fetch stats
+// 	const statsRes = await fetch(`${API_URL}/stats`, { headers });
+// 	if (statsRes.ok) {
+// 		stats = await statsRes.json();
+// 	}
+// } catch (e) {
+// 	if (e instanceof Error) {
+// 		error = e.message;
+// 	} else {
+// 		error = String(e);
+// 		console.error("Error fetching songs:", error);
+// 	}
+// }
 
 const seoTitle = "Cancionero Digital | Letras y Acordes Cristianos";
 const seoDescription =
@@ -77,40 +78,7 @@ const schema = {
 				<h1 class="text-3xl font-bold text-accent-main mb-6">
 					Panel Principal
 				</h1>
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-					<div
-						class="bg-bg-secondary p-6 rounded-xl flex flex-col items-center justify-center shadow-lg border border-white/5 hover:border-accent-main/30 transition-colors"
-					>
-						<h2
-							class="text-lg font-medium text-text-secondary mb-2"
-						>
-							{
-								user?.role === "ADMIN"
-									? "Total de Canciones"
-									: "Canciones Disponibles"
-							}
-						</h2>
-						<p class="text-4xl font-bold text-accent-main">
-							{
-								user?.role === "ADMIN"
-									? stats.totalSongs
-									: (stats.activeSongs ?? stats.totalSongs)
-							}
-						</p>
-					</div>
-					<div
-						class="bg-bg-secondary p-6 rounded-xl flex flex-col items-center justify-center shadow-lg border border-white/5 hover:border-accent-main/30 transition-colors"
-					>
-						<h2
-							class="text-lg font-medium text-text-secondary mb-2"
-						>
-							Categorías
-						</h2>
-						<p class="text-4xl font-bold text-accent-main">
-							{stats.totalCategories}
-						</p>
-					</div>
-				</div>
+				<DashboardStats client:load isAdmin={user?.role === "ADMIN"} />
 			</section>
 
 			<section>

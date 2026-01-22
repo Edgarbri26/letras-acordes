@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SongLine from './SongLine';
 import { transposeText } from '../utils/music';
 
-export default function SongView({ initialContent, initialKey = 'C', originalKey = 'C' }) {
+export default function SongView({ initialContent, initialKey = 'C', originalKey = 'C', initialShowChords = true }) {
     const [content, setContent] = useState(() => {
         // If initialKey (target) is different from originalKey (source), transpose immediately
         if (initialKey && originalKey && initialKey !== originalKey) {
@@ -11,7 +11,7 @@ export default function SongView({ initialContent, initialKey = 'C', originalKey
         return initialContent;
     });
     const [currentKey, setCurrentKey] = useState(initialKey || originalKey);
-    const [showChords, setShowChords] = useState(true);
+    const [showChords, setShowChords] = useState(initialShowChords);
 
     useEffect(() => {
 
