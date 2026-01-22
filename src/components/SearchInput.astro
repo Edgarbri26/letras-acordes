@@ -29,22 +29,24 @@ const { class: className } = Astro.props;
 </form>
 
 <script>
-    const searchForm = document.getElementById(
-        "global-search-form",
-    ) as HTMLFormElement;
-    const searchInput = document.getElementById(
-        "global-search-input",
-    ) as HTMLInputElement;
+    document.addEventListener("astro:page-load", () => {
+        const searchForm = document.getElementById(
+            "global-search-form",
+        ) as HTMLFormElement;
+        const searchInput = document.getElementById(
+            "global-search-input",
+        ) as HTMLInputElement;
 
-    if (searchForm && searchInput) {
-        searchForm.addEventListener("submit", (e) => {
-            e.preventDefault();
-            const query = searchInput.value.trim();
-            if (query) {
-                window.location.href = `/search/${encodeURIComponent(query)}`;
-            } else {
-                window.location.href = `/search/all`;
-            }
-        });
-    }
+        if (searchForm && searchInput) {
+            searchForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `/search/${encodeURIComponent(query)}`;
+                } else {
+                    window.location.href = `/search/all`;
+                }
+            });
+        }
+    });
 </script>
