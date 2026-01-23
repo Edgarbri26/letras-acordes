@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 export const SongToolsReact = ({
     id,
-    onTranspose = undefined,
-    onToggleChords = undefined,
-    onPrint = undefined,
+    onTranspose,
+    onToggleChords,
+    onPrint,
     canEdit
 }) => {
     // Unused state removed to fix SSR error

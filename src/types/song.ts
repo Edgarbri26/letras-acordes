@@ -11,7 +11,9 @@ export type Song = {
     category: Category | null;
     active: boolean;
     user?: {
+        id: number;
         name: string;
     } | null;
+    userId?: number;
 }
 

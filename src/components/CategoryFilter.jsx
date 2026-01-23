@@ -33,7 +33,7 @@ export default function CategoryFilter({ isAdmin }) {
     return (
         <div className="flex overflow-x-auto pb-4 gap-2 mb-4 scrollbar-hide mask-fade-right">
             <a
-                href="/search/all"
+                href="/songs/search/all"
                 className="px-4 py-2 rounded-full text-sm font-medium transition-colors bg-bg-secondary text-text-secondary hover:text-white hover:bg-white/10 whitespace-nowrap shrink-0"
             >
                 Explorar Todas
@@ -47,8 +47,8 @@ export default function CategoryFilter({ isAdmin }) {
                         key={cat.id}
                         href={
                             cat.id === -1
-                                ? `/search/all?active=false`
-                                : `/search/all?categoryId=${cat.id}`
+                                ? `/songs/search/all?active=false`
+                                : `/songs/search/all?categoryId=${cat.id}`
                         }
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${cat.id === -1
                             ? "bg-red-900/30 text-red-200 border border-red-500/30 hover:bg-red-900/50"

@@ -29,7 +29,12 @@ if (Astro.request.method === "POST") {
 
         // Simpler: Fetch just for cloning
         const headers: HeadersInit = { Authorization: `Bearer ${token}` };
-        const res = await fetch(`${API_URL}/misas/${id}`, { headers });
+        const fetchUrl = new URL(`${API_URL}/misas/${id}`);
+        const shareToken = Astro.url.searchParams.get("share_token");
+        if (shareToken) fetchUrl.searchParams.append("share_token", shareToken);
+        if (editToken) fetchUrl.searchParams.append("edit_token", editToken);
+
+        const res = await fetch(fetchUrl.toString(), { headers });
         if (res.ok) {
             const originalMisa = await res.json();
             const result = await cloneMisa(originalMisa, token);
@@ -118,46 +123,45 @@ const formatDate = (dateString: string) => {
                                 </p>
                             </div>
                             <div class="flex gap-2 items-center">
-                                {misa.visibility === "PUBLIC" &&
-                                    token &&
-                                    !misa.isOwner && (
-                                        <form method="POST">
-                                            <input
-                                                type="hidden"
-                                                name="action"
-                                                value="clone"
-                                            />
-                                            <button
-                                                type="submit"
-                                                class="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
-                                                title="Clonar esta misa para editarla"
+                                {token && (
+                                    <form method="POST" id="cloneMisaForm">
+                                        <input
+                                            type="hidden"
+                                            name="action"
+                                            value="clone"
+                                        />
+                                        <button
+                                            type="submit"
+                                            id="cloneMisaBtn"
+                                            class="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 px-3 py-1 rounded hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1"
+                                            title="Clonar esta misa para editarla"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="12"
+                                                height="12"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                stroke-width="2"
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                class="lucide lucide-copy"
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    width="12"
-                                                    height="12"
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    stroke-width="2"
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    class="lucide lucide-copy"
-                                                >
-                                                    <rect
-                                                        width="14"
-                                                        height="14"
-                                                        x="8"
-                                                        y="8"
-                                                        rx="2"
-                                                        ry="2"
-                                                    />
-                                                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                                                </svg>
-                                                Clonar
-                                            </button>
-                                        </form>
-                                    )}
+                                                <rect
+                                                    width="14"
+                                                    height="14"
+                                                    x="8"
+                                                    y="8"
+                                                    rx="2"
+                                                    ry="2"
+                                                />
+                                                <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                                            </svg>
+                                            Clonar
+                                        </button>
+                                    </form>
+                                )}
 
                                 {misa.visibility === "PRIVATE" &&
                                     (misa.isOwner ||
@@ -459,6 +463,25 @@ const formatDate = (dateString: string) => {
                     console.error("Failed to copy:", err);
                 }
             }
+        });
+    }
+
+    const cloneForm = document.getElementById("cloneMisaForm");
+    const cloneBtn = document.getElementById(
+        "cloneMisaBtn",
+    ) as HTMLButtonElement | null;
+
+    if (cloneForm && cloneBtn) {
+        cloneForm.addEventListener("submit", () => {
+            cloneBtn.disabled = true;
+            cloneBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-3 w-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Clonando...
+             `;
+            cloneBtn.classList.add("opacity-50", "cursor-not-allowed");
         });
     }
 </script>

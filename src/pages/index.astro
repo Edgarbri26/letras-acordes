@@ -97,7 +97,7 @@ const schema = {
 
 				<CategoryFilter client:load isAdmin={user?.role === "ADMIN"} />
 
-				<GridSongs client:load />
+				<GridSongs client:load endpoint={`${API_URL}/songs?limit=12`} />
 			</section>
 		</main>
 	</div>
