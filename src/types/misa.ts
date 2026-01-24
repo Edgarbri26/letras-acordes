@@ -21,4 +21,10 @@ export interface Misa {
     dateCreate: string;
     dateMisa: string;
     misaSongs: MisaSong[];
+    visibility: 'PUBLIC' | 'PRIVATE';
+    userId: number;
+    user?: {
+        name: string;
+        email: string;
+    };
 }
