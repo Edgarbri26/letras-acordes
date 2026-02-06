@@ -1,0 +1,713 @@
+---
+// export const prerender = false;
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import ChordEditor from "@/components/ChordEditor.jsx";
+import { supabase } from "@/lib/supabase";
+import "@/styles/global.css";
+import type { Category } from "@/types/category";
+import { createSong, API_URL } from "@/services/songs";
+import AiAutocompleteButton from "@/components/Ui/AiAutocompleteButton.astro";
+
+import { getUserFromToken, hasPermission } from "@/utils/auth";
+
+const token = Astro.cookies.get("token")?.value;
+const user = getUserFromToken(token);
+
+if (!token || !user) {
+    return Astro.redirect("/login");
+}
+
+if (!hasPermission(user, "song.create")) {
+    return Astro.redirect("/");
+}
+
+let categories: Category[] = [];
+try {
+    const res = await fetch(`${API_URL}/categories`);
+    if (res.ok) {
+        categories = await res.json();
+    }
+} catch (e) {
+    console.error("Error fetching categories:", e);
+}
+
+let errorMessage = "";
+
+if (Astro.request.method === "POST") {
+    const formData = await Astro.request.formData();
+    const result = await createSong(formData, token);
+
+    if (result.success) {
+        return Astro.redirect(`/songs/${result.data.id}`);
+    } else {
+        errorMessage = result.error || "Error desconocido";
+    }
+}
+---
+
+<Layout title="Subir Canción">
+    <div class="flex flex-col h-full bg-bg-main text-text-main">
+        <main class="flex-1 max-w-6xl mx-auto w-full p-6 md:p-10">
+            <h1 class="text-3xl font-bold text-accent-main mb-8">
+                Enviar Cifrado
+            </h1>
+
+            {}
+
+            <form class="space-y-8" method="POST">
+                {/* Info Básica (Grid de 3 columnas para aprovechar espacio) */}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label
+                            for="artist"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Artista / Banda</label
+                        >
+                        <input
+                            type="text"
+                            id="artist"
+                            name="artist"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                            placeholder="Ej. Cindy Barrera"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="title"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Nombre de la canción</label
+                        >
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                            placeholder="Ej. Dios está aquí"
+                            required
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label
+                            for="key"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Tono Principal</label
+                        >
+                        <select
+                            id="key"
+                            name="key"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors appearance-none cursor-pointer"
+                        >
+                            {
+                                [
+                                    "C",
+                                    "Cm",
+                                    "C#",
+                                    "C#m",
+                                    "D",
+                                    "Dm",
+                                    "D#",
+                                    "D#m",
+                                    "E",
+                                    "Em",
+                                    "F",
+                                    "Fm",
+                                    "F#",
+                                    "F#m",
+                                    "G",
+                                    "Gm",
+                                    "G#",
+                                    "G#m",
+                                    "A",
+                                    "Am",
+                                    "A#",
+                                    "A#m",
+                                    "B",
+                                    "Bm",
+                                ].map((k) => <option value={k}>{k}</option>)
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label
+                            for="url_song"
+                            class="block text-sm font-medium text-text-secondary"
+                            >Link del Video (YouTube)</label
+                        >
+                        <input
+                            type="url"
+                            id="url_song"
+                            name="url_song"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors placeholder-white/20"
+                            placeholder="https://youtube.com/..."
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label
+                                for="categoryId"
+                                class="block text-sm font-medium text-text-secondary"
+                                >Categoría</label
+                            >
+                            <button
+                                type="button"
+                                id="btn-new-category"
+                                class="text-xs text-accent-main hover:text-white underline transition-colors"
+                            >
+                                + Nueva Categoría
+                            </button>
+                        </div>
+                        <select
+                            id="categoryId"
+                            name="categoryId"
+                            class="w-full bg-bg-secondary border border-white/10 rounded-lg p-3 text-text-main focus:outline-none focus:border-accent-main transition-colors appearance-none cursor-pointer"
+                        >
+                            {
+                                categories.map((cat) => (
+                                    <option value={cat.id}>{cat.name}</option>
+                                ))
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-6">
+                    <div
+                        class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    >
+                        <div>
+                            <h3 class="text-xl font-semibold text-white">
+                                Letra y Acordes
+                            </h3>
+                            <p class="text-sm text-text-secondary">
+                                Escribe la letra y usa los botones para insertar
+                                los acordes en la posición exacta.
+                            </p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <button
+                                type="button"
+                                id="btn-ai-search-song"
+                                title="Autocompletar canción original por fragmento de letra"
+                                class="flex items-center gap-2 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
+                            >
+                                <span>🔍</span> Autocompletar canción
+                            </button>
+                            <AiAutocompleteButton
+                                token={token}
+                                apiUrl={API_URL}
+                                class="flex items-center gap-2 bg-linear-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full shadow-md transition-all transform hover:scale-105"
+                                showIconOnly={false}
+                            />
+                        </div>
+                    </div>
+
+                    {/* AQUÍ VA LA MAGIA DE REACT */}
+                    {
+                        /* Pasamos 'name="content"' para que el form lo reconozca */
+                    }
+                    <ChordEditor client:only="react" name="content" />
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button
+                        type="submit"
+                        class="bg-accent-main hover:bg-accent-main/90 text-white font-bold py-3 px-8 rounded-lg transition-transform transform hover:scale-105 shadow-lg shadow-accent-main/20"
+                    >
+                        Guardar Canción
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+    {/* Modal para crear categoría */}
+    <dialog
+        id="modal-category"
+        class="bg-bg-secondary text-text-main border border-white/10 rounded-lg p-6 backdrop:backdrop-blur-sm shadow-xl w-full max-w-sm m-auto"
+    >
+        <form method="dialog" class="space-y-4">
+            <h3 class="text-lg font-bold">Nueva Categoría</h3>
+            <div class="space-y-2">
+                <label for="new-cat-name" class="text-sm text-text-secondary"
+                    >Nombre</label
+                >
+                <input
+                    type="text"
+                    id="new-cat-name"
+                    class="w-full bg-bg-main border border-white/10 rounded p-2 focus:border-accent-main focus:outline-none"
+                    placeholder="Ej. Adoración"
+                />
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button
+                    value="cancel"
+                    class="px-4 py-2 text-sm text-text-secondary hover:text-white transition-colors"
+                    >Cancelar</button
+                >
+                <button
+                    id="btn-save-category"
+                    type="button"
+                    class="px-4 py-2 text-sm bg-accent-main text-white rounded hover:bg-accent-main/90 transition-colors"
+                    >Guardar</button
+                >
+            </div>
+        </form>
+    </dialog>
+
+    <div
+        id="add-song-data"
+        data-api-url={API_URL}
+        data-error-message={errorMessage}
+        data-token={token}
+        class="hidden"
+    >
+    </div>
+
+    <script>
+        import Swal from "sweetalert2";
+
+        // Configuración de tema oscuro para SweetAlert2
+        const swalDark = {
+            background: "#1f2937",
+            color: "#fff",
+            confirmButtonColor: "#f97316",
+            cancelButtonColor: "#4b5563",
+        };
+
+        // Funciones de alerta personalizadas
+        const showError = (title: string, text: string) => {
+            return Swal.fire({
+                ...swalDark,
+                icon: "error",
+                title: title,
+                text: text,
+            });
+        };
+
+        const showSuccessToast = (
+            title: string,
+            text: string,
+            timer: number = 3000,
+        ) => {
+            return Swal.fire({
+                ...swalDark,
+                icon: "success",
+                title: title,
+                text: text,
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: timer,
+            });
+        };
+
+        const showConfirm = (
+            title: string,
+            text: string,
+            confirmText: string = "Sí",
+            cancelText: string = "Cancelar",
+        ) => {
+            return Swal.fire({
+                ...swalDark,
+                title,
+                text,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: confirmText,
+                cancelButtonText: cancelText,
+                reverseButtons: true,
+            });
+        };
+
+        const showLoading = (title: string) => {
+            return Swal.fire({
+                ...swalDark,
+                title,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                },
+            });
+        };
+
+        const initAddSongPage = () => {
+            console.log("Initializing Add Song Page script");
+            const dataElement = document.getElementById("add-song-data");
+
+            // If we are not on the add song page, add-song-data might not exist
+            if (!dataElement) return;
+
+            const API_URL = dataElement?.dataset.apiUrl;
+            const errorMessage = dataElement?.dataset.errorMessage;
+            const token = dataElement?.dataset.token;
+
+            if (errorMessage) {
+                console.error("Error Message:", errorMessage);
+            }
+
+            // --- Category Logic ---
+            console.log("Initializing category logic...");
+
+            const btnNewCategory = document.querySelector(
+                "#btn-new-category",
+            ) as HTMLButtonElement | null;
+            const modalCategory = document.querySelector(
+                "#modal-category",
+            ) as HTMLDialogElement | null;
+            const btnSaveCategory = document.querySelector(
+                "#btn-save-category",
+            ) as HTMLButtonElement | null;
+            const inputCatName = document.querySelector(
+                "#new-cat-name",
+            ) as HTMLInputElement | null;
+            const selectCategory = document.querySelector(
+                "#categoryId",
+            ) as HTMLSelectElement | null;
+            const closeCategoryBtn = document.querySelector(
+                "#modal-category button[value='cancel']",
+            ) as HTMLButtonElement | null;
+
+            // Helper to remove listeners (cloning)
+            const replaceWithClone = (element: Element): Element => {
+                const newElement = element.cloneNode(true) as Element;
+                element.parentNode?.replaceChild(newElement, element);
+                return newElement;
+            };
+
+            if (btnNewCategory && modalCategory) {
+                const newBtnNewCategory = replaceWithClone(btnNewCategory);
+
+                newBtnNewCategory.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    modalCategory.showModal();
+                    if (inputCatName) {
+                        inputCatName.value = "";
+                        inputCatName.focus();
+                    }
+                });
+            }
+
+            if (closeCategoryBtn && modalCategory) {
+                const newCloseCategoryBtn = replaceWithClone(closeCategoryBtn);
+                newCloseCategoryBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    modalCategory.close();
+                });
+            }
+
+            if (btnSaveCategory) {
+                const newBtnSaveCategory = replaceWithClone(
+                    btnSaveCategory,
+                ) as HTMLButtonElement;
+                newBtnSaveCategory.addEventListener("click", async () => {
+                    const name = inputCatName?.value.trim();
+                    if (!name) return;
+
+                    try {
+                        newBtnSaveCategory.disabled = true;
+                        newBtnSaveCategory.textContent = "Guardando...";
+
+                        if (!API_URL) throw new Error("API URL not found");
+
+                        const headers: Record<string, string> = {
+                            "Content-Type": "application/json",
+                        };
+
+                        if (token) {
+                            headers["Authorization"] = `Bearer ${token}`;
+                        }
+
+                        const res = await fetch(`${API_URL}/categories`, {
+                            method: "POST",
+                            headers: headers,
+                            body: JSON.stringify({ name }),
+                        });
+
+                        if (res.ok) {
+                            const newCat = await res.json();
+                            // Agregar al select
+                            const option = document.createElement("option");
+                            option.value = newCat.id;
+                            option.textContent = newCat.name;
+                            option.selected = true; // Seleccionar automáticamente
+                            selectCategory?.appendChild(option);
+
+                            modalCategory?.close();
+
+                            console.log("¡Categoría creada!");
+                        } else {
+                            const err = await res.json();
+                            console.error("Error al crear la categoría", err);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        console.error("Error de conexión");
+                    } finally {
+                        newBtnSaveCategory.disabled = false;
+                        newBtnSaveCategory.textContent = "Guardar";
+                    }
+                });
+            }
+
+            // --- Main Form Logic ---
+            const mainForm = document.querySelector(
+                "main form",
+            ) as HTMLFormElement | null;
+
+            if (mainForm) {
+                // Not cloning form to keep reacting with ChordEditor probably?
+                // Actually ChordEditor is outside the form or handled by React...
+                // Wait, ChordEditor contains hidden input named "content".
+                // Cloning the form might break React mounting if it was inside, but ChordEditor is distinct.
+                // However, attaching a submit listener multiple times is bad.
+                // Let's use a flag.
+                if (!mainForm.dataset.listenerAttached) {
+                    mainForm.addEventListener("submit", () => {
+                        const mainSubmitBtn = mainForm.querySelector(
+                            "button[type='submit']",
+                        );
+                        if (mainSubmitBtn) {
+                            mainSubmitBtn.setAttribute("disabled", "true");
+                            mainSubmitBtn.innerHTML = "Guardando...";
+                            mainSubmitBtn.classList.add(
+                                "opacity-75",
+                                "cursor-not-allowed",
+                            );
+                        }
+                    });
+                    mainForm.dataset.listenerAttached = "true";
+                }
+            }
+
+            // --- AI Search Song by Lyrics Logic ---
+            const btnAISearch = document.getElementById(
+                "btn-ai-search-song",
+            ) as HTMLButtonElement | null;
+
+            if (btnAISearch) {
+                const newBtnAISearch = replaceWithClone(
+                    btnAISearch,
+                ) as HTMLButtonElement;
+
+                newBtnAISearch.addEventListener("click", async () => {
+                    console.log("AI Search Song Button Clicked");
+                    const titleInput = document.querySelector(
+                        "#title",
+                    ) as HTMLInputElement | null;
+                    const artistInput = document.querySelector(
+                        "#artist",
+                    ) as HTMLInputElement | null;
+                    const contentInput = document.querySelector(
+                        '[name="content"]',
+                    ) as HTMLInputElement | HTMLTextAreaElement | null;
+
+                    const title = titleInput?.value || "";
+                    const artist = artistInput?.value || "";
+                    const lyricFragment = contentInput?.value || "";
+
+                    // Validar que haya al menos un fragmento de letra
+                    if (!lyricFragment || lyricFragment.trim().length === 0) {
+                        await showError(
+                            "Fragmento de letra requerido",
+                            "Por favor escribe al menos 2-4 líneas de la letra de la canción que deseas buscar.\n\nEjemplo:\n'Santo, santo, santo es el Señor\nDios del universo\nLlenos están el cielo y la tierra'",
+                        );
+                        return;
+                    }
+
+                    // Validar que el fragmento tenga suficiente contenido (mínimo ~2 líneas)
+                    if (lyricFragment.trim().length < 50) {
+                        await showError(
+                            "Fragmento muy corto",
+                            "El fragmento de letra es demasiado corto para identificar la canción.\n\nPor favor escribe al menos 2-4 líneas completas de la letra.\n\nEjemplo:\n'Santo, santo, santo es el Señor\nDios del universo\nLlenos están el cielo y la tierra'",
+                        );
+                        return;
+                    }
+
+                    // Confirmar con el usuario
+                    const artistInfo = artist ? ` de ${artist}` : "";
+                    const titleInfo = title ? ` (${title})` : "";
+                    const fragmentPreview = lyricFragment.substring(0, 100);
+                    const confirmResult = await showConfirm(
+                        "¿Buscar canción por letra?",
+                        `Se buscará la canción original usando este fragmento${titleInfo}${artistInfo}:\n\n"${fragmentPreview}${lyricFragment.length > 100 ? "..." : ""}"\n\nEl contenido actual del editor será reemplazado con la canción completa encontrada.`,
+                        "Sí, buscar",
+                        "Cancelar",
+                    );
+
+                    if (!confirmResult.isConfirmed) return;
+
+                    try {
+                        // Mostrar indicador de carga
+                        showLoading("Buscando canción...");
+
+                        // Deshabilitar botón
+                        newBtnAISearch.disabled = true;
+                        newBtnAISearch.classList.add(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+
+                        // Importar dinámicamente el servicio de IA
+                        const { searchSongByLyrics } =
+                            await import("../../services/ai.ts");
+
+                        // Llamar al servicio para buscar canción por letra
+                        const result = await searchSongByLyrics(
+                            {
+                                lyricFragment: lyricFragment,
+                                artist: artist || undefined,
+                                title: title || undefined,
+                            },
+                            token,
+                            API_URL,
+                        );
+
+                        if (!result.success) {
+                            throw new Error(
+                                result.error || "Error al buscar la canción",
+                            );
+                        }
+
+                        const data = result.data;
+                        console.log("AI Search Song Response:", data);
+
+                        if (data && data.chordPro) {
+                            // Actualizar campos del formulario con la información encontrada
+                            if (data.metadata?.title && titleInput) {
+                                titleInput.value = data.metadata.title;
+                            }
+                            if (data.metadata?.artist && artistInput) {
+                                artistInput.value = data.metadata.artist;
+                            }
+                            if (data.metadata?.key) {
+                                const keySelect = document.querySelector(
+                                    "#key",
+                                ) as HTMLSelectElement | null;
+                                if (keySelect) {
+                                    keySelect.value = data.metadata.key;
+                                    // Disparar evento de cambio de tono
+                                    window.dispatchEvent(
+                                        new CustomEvent("song-key-change", {
+                                            detail: { key: data.metadata.key },
+                                        }),
+                                    );
+                                }
+                            }
+
+                            // Disparar evento personalizado para que React actualice el editor
+                            window.dispatchEvent(
+                                new CustomEvent("update-editor-content", {
+                                    detail: { content: data.chordPro },
+                                }),
+                            );
+
+                            // Cerrar loading y mostrar información de la canción encontrada
+                            const chordsList =
+                                data.chords?.list?.join(", ") || "N/A";
+                            const songTitle = data.metadata?.title || "Canción";
+                            const songArtist =
+                                data.metadata?.artist || "Desconocido";
+                            await showSuccessToast(
+                                "¡Canción encontrada!",
+                                `${songTitle} - ${songArtist} (${data.metadata?.key || "N/A"}) | ${data.chords?.count || 0} acordes`,
+                                6000,
+                            );
+                        } else {
+                            throw new Error("Respuesta inválida del servidor");
+                        }
+                    } catch (error) {
+                        console.error("Error al buscar canción:", error);
+                        const errorMsg =
+                            error instanceof Error
+                                ? error.message
+                                : "Error desconocido";
+
+                        // Determinar el tipo de error
+                        const isNotFound =
+                            errorMsg.includes("No se pudo identificar") ||
+                            errorMsg.includes("no encontr");
+
+                        const isTimeout =
+                            errorMsg.includes("timeout") ||
+                            errorMsg.includes("ECONNABORTED") ||
+                            errorMsg.includes("Network Error");
+
+                        const isServerError =
+                            errorMsg.includes("500") ||
+                            errorMsg.includes("502") ||
+                            errorMsg.includes("503");
+
+                        if (isNotFound) {
+                            await showError(
+                                "Canción no identificada",
+                                "No se pudo identificar la canción con el fragmento proporcionado.\n\nIntenta con:\n• Un fragmento más largo (4-6 líneas)\n• Frases más distintivas de la canción\n• Agregar el nombre del artista como pista",
+                            );
+                        } else if (isTimeout || isServerError) {
+                            await showError(
+                                "Servicio de IA no disponible",
+                                "El servicio de inteligencia artificial no está respondiendo en este momento.\n\nPosibles causas:\n• El servicio puede estar temporalmente caído\n• Problemas de conexión a internet\n• El servidor está sobrecargado\n\nPor favor intenta nuevamente en unos minutos.",
+                            );
+                        } else {
+                            await showError(
+                                "Error al buscar la canción",
+                                `${errorMsg}\n\nPor favor verifica tu conexión a internet e intenta nuevamente.`,
+                            );
+                        }
+                    } finally {
+                        // Cerrar loading y restaurar botón
+                        Swal.close();
+                        newBtnAISearch.disabled = false;
+                        newBtnAISearch.classList.remove(
+                            "opacity-75",
+                            "cursor-not-allowed",
+                        );
+                    }
+                });
+            }
+
+            // --- Key Logic ---
+            const keySelect = document.querySelector(
+                "#key",
+            ) as HTMLSelectElement | null;
+
+            if (keySelect) {
+                // Should we clone keySelect? Replacing it might break if something else holds a reference (unlikely)
+                // But let's clone to clear listeners
+                const newKeySelect = replaceWithClone(
+                    keySelect,
+                ) as HTMLSelectElement;
+                newKeySelect.addEventListener("change", (e) => {
+                    const target = e.target as HTMLSelectElement;
+                    const newKey = target.value;
+                    const event = new CustomEvent("song-key-change", {
+                        detail: { key: newKey },
+                    });
+                    window.dispatchEvent(event);
+                });
+
+                // Escuchar cambios desde el editor de acordes
+                window.addEventListener("editor-key-change", (e) => {
+                    if (e instanceof CustomEvent) {
+                        // Need to re-query active keySelect because replaceWithClone might have created a new one
+                        const currentKeySelect = document.querySelector(
+                            "#key",
+                        ) as HTMLSelectElement | null;
+                        if (currentKeySelect && e.detail && e.detail.key) {
+                            currentKeySelect.value = e.detail.key;
+                        }
+                    }
+                });
+            }
+        };
+
+        // Attach to both events
+        document.addEventListener("DOMContentLoaded", initAddSongPage);
+        document.addEventListener("astro:page-load", initAddSongPage);
+    </script>
+</Layout>
